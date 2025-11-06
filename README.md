@@ -37,12 +37,15 @@ The Jacobian is given by:
 
 # Dual Numbers and Forward Auto-Diff
 Dual number are numbers that have the property:
-.. math:: \epsilon \neq 0
-   :label: HyperRealP1
-
-.. math:: \epsilon * \epsilon = 0
-   :label: HyperRealP2
-
 ```math
-\displaylines{  \epsilon \neq 0  \\ \epsilon * \epsilon = 0}
+\displaylines{  \epsilon \neq 0  \\
+                \epsilon * \epsilon = 0}
+```
+A dual number can be added and multiplied by any other type of number
+without issue giving another dual number:
+```math
+\displaylines{  \epsilon + \epsilon =  2 \epsilon  \\
+                5 * \epsilon = 5 \epsilon          \\
+                5 + \epsilon = 5 + \epsilon        \\
+                (5 + \epsilon)^{2} = 25 + 10 \epsilon}
 ```
