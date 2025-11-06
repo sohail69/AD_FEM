@@ -66,25 +66,25 @@ but rather the Non-dual part of the number cancels out and the remainder left is
 part multiplied by a coefficient, the coefficient is the exact evaluated derivative of the
 function.
 
-The C++ dual number implementation is as follows:
+The C++ dual number template is as follows:
 ```c++
-\displaylines{ dualNumber<val_t,grad_t> }
+dualNumber<val_t,grad_t>
 ```
 To calculate the first derivative (residual) only the dual number of the type of the
 precision of float is needed setting the grad component to one and evaluating the function, e.g. 
 ```c++
-\displaylines{ double val=10.0 /*some arbitrary value for function eval*/
-               dualNumber<double,double> x(val,1.0);
-               df = f(x).grad;}
+double val=10.0 /*some arbitrary value for function eval*/
+dualNumber<double,double> x(val,1.0);
+df = f(x).grad;
 ```
 
 For the second derivative (Jacobian) a slightly more sophisticated route is needed. you need a dual
 number of dual numbers
 ```c++
-\displaylines{ double val=10.0 /*some arbitrary value for function eval*/
-               dualNumber<double,double> a(val,1.0), b(1.0,0.0);
-               dualNumber<dualNumber<double,double>,<dualNumber<double,double>> x(a,b);
-               d2f = f(x).grad.grad;}
+double val=10.0 /*some arbitrary value for function eval*/
+dualNumber<double,double> a(val,1.0), b(1.0,0.0);
+dualNumber<dualNumber<double,double>,<dualNumber<double,double>> x(a,b);
+d2f = f(x).grad.grad;
 ```
 
 For Vector input functionals (scalars with vector inputs) this makes the direct evaulation of the
