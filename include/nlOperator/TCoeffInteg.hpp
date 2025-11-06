@@ -42,11 +42,3 @@ class TCoefficientIntegrator
    /// Coefficicient destructor
    ~TCoefficientIntegrator();
 };
-
-
-/*
-  //Element transforms etc..
-  Array<int> vdofs;
-  ElementTransformation *eltrans;
-  DofTransformation *doftrans;
-*/

@@ -44,12 +44,10 @@ private:
   tVector<dualNumber<Number,Number>> tEVec;        //Templated dual number vector for auto-diff
 
 
-
   //The device and sizing based things
   bool use_dev=true;
   const UINT64 nElms = 20, NDofs=8, NIntegs=0;
   const UINT64 n = nElms*NDofs;
-  const char *device_config = "cpu";
   const mfem::Device     & device;
   const mfem::MemoryType & mt;
 

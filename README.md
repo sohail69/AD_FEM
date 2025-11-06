@@ -8,6 +8,15 @@ constraints(A):
 \displaylines{Min[e(u_1, u_2,...,u_n)] \\
               A.u = c}
 ```
+Some example functionals include:
+```math
+\displaylines{ e_{LE}(u) = int_{\Omega} \frac{1}{2} \vec{u} \cdot K \vec{u} 
+                          + \vec{F} \cdot \vec{u} d\Omega \quad Linear elasticity \\
+               e_{HE}(T) = int_{\Omega} T \cdot \left( \frac{\partial T}{\partial t} + \Delta T \right) d\Omega \quad Heat equation }
+
+```
+
+
 In finite element problems we want this functional to be stationary with regards to
 some defined DOFs, this means that the first derivative of the energy functional with
 regards to the DOF's of interest must be zero, this is the residual form:

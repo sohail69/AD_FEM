@@ -13,6 +13,15 @@ class TLElasticityCoeffIntegrator
     //consts// dShapeFunc, ShapeFunc, detJ, weights
     //Vars  // u, gradU 
 
+
+/*
+  //Element transforms etc..
+  Array<int> vdofs;
+  ElementTransformation *eltrans;
+  DofTransformation *doftrans;
+*/
+
+
   public:
    /// Define a time-independent templated coefficient
    TLElasticityCoeffIntegrator(Array<int> used_blocks);
