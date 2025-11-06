@@ -49,3 +49,45 @@ without issue giving another dual number:
                 5 + \epsilon = 5 + \epsilon        \\
                 (5 + \epsilon)^{2} = 25 + 10 \epsilon}
 ```
+Dual numbers in conjunction with templated functions can be used to
+exactly calculate derivatives. Given a function f(x) using limits the derivative
+of that function is defined as:
+```math
+\displaylines{ f(x+h) = Lim_{h \rightarrow 0} \frac{ f(x+h) - f(x) }{h} }
+```
+In the context above (h) can be replaced by a dual number, such that the equation
+becomes transformed into:
+```math
+\displaylines{   f'(x)*\epsilon = f(x+\epsilon) - f(x) }
+```
+The key difference between this and the equation above is that the limits don't need
+to be taken and neither do manual derivatives. It may seem like a simple multiplication
+but rather the Non-dual part of the number cancels out and the remainder left is the dual
+part multiplied by a coefficient, the coefficient is the exact evaluated derivative of the
+function.
+
+The C++ dual number implementation is as follows:
+```c++
+\displaylines{ dualNumber<val_t,grad_t> }
+```
+To calculate the first derivative (residual) only the dual number of the type of the
+precision of float is needed setting the grad component to one and evaluating the function, e.g. 
+```c++
+\displaylines{ double val=10.0 //some arbitrary value for function eval  \\
+               dualNumber<double,double> x(val,1.0); \\
+               df = f(x).grad;}
+```
+
+For the second derivative (Jacobian) a slightly more sophisticated route is needed. you need a dual
+number of dual numbers
+```c++
+\displaylines{ double val=10.0 //some arbitrary value for function eval  \\
+               dualNumber<double,double> a(val,1.0), b(1.0,0.0); \\
+               dualNumber<dualNumber<double,double>,<dualNumber<double,double>> x(a,b); \\
+               d2f = f(x).grad.grad;}
+```
+
+For Vector input functionals (scalars with vector inputs) this makes the direct evaulation of the
+residual and Jacobian quite natural on the element level without having to manually calculate 
+the derivatives of the functional. One just perturbs each component of the element vector 
+(one by one) and returns the appropriate dual component.

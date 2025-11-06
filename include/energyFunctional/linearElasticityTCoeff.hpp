@@ -9,14 +9,18 @@
 template<typename Number>
 class TLElasticityCoeffIntegrator
 {
+  private:
+    //consts// dShapeFunc, ShapeFunc, detJ, weights
+    //Vars  // u, gradU 
+
   public:
    /// Define a time-independent templated coefficient
-   TCoefficientIntegrator(Array<int> used_blocks);
+   TLElasticityCoeffIntegrator(Array<int> used_blocks);
 
    /// Evaluate the integral of the element
    Number Eval(Array<int> elm_btoffs, BlockVector elm_x)=0;
 
    /// Coefficicient destructor
-   ~TCoefficientIntegrator();
+   ~TLElasticityCoeffIntegrator();
 };
 
