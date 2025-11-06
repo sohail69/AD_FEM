@@ -1,6 +1,6 @@
 # AD FEM Overview
 An attempt at making a fully functional AD framework in MFEM, for problems which
-can be described as constrianed minimals of energy functionals. The general problem
+can be described as constrained minimals of energy functionals. The general problem
 setup is as follows, suppose you want to minimise an energy function subject to
 constraints(A):
 
