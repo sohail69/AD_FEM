@@ -10,8 +10,8 @@ constraints(A):
 ```
 Some example functionals include:
 ```math
-\displaylines{ e_{LE}(u) = \int_{\Omega} \frac{1}{2} \vec{u} \cdot K \vec{u} 
-                          + \vec{F} \cdot \vec{u} d\Omega \quad Linear-elasticity \\
+\displaylines{ e_{LE}(u) = \int_{\Omega} \left( \frac{1}{2} \vec{u} \cdot K \vec{u} 
+                          + \vec{F} \cdot \vec{u} \right) d\Omega \quad Linear-elasticity \\
                e_{HE}(T) = \int_{\Omega} T \cdot \left( \frac{\partial T}{\partial t} + \Delta T \right) d\Omega \quad Heat-equation }
 
 ```
