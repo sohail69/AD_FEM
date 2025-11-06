@@ -18,7 +18,6 @@ Some example functionals include:
                            - \frac{P^{2}}{2\lambda} \right) d\Omega \quad Mixed-NeoHookean-equation}
 ```
 
-
 In finite element problems we want this functional to be stationary with regards to
 some defined DOFs, this means that the first derivative of the energy functional with
 regards to the DOF's of interest must be zero, this is the residual form:
@@ -64,7 +63,7 @@ Dual numbers in conjunction with templated functions can be used to
 exactly calculate derivatives. Given a function f(x) using limits the derivative
 of that function is defined as:
 ```math
-\displaylines{ f(x+h) = Lim_{h \rightarrow 0} \frac{ f(x+h) - f(x) }{h} }
+\displaylines{ f'(x) = Lim_{h \rightarrow 0} \frac{ f(x+h) - f(x) }{h} }
 ```
 In the context above (h) can be replaced by a dual number, such that the equation
 becomes transformed into:
