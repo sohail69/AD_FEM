@@ -32,24 +32,24 @@ class residualForm : public Vector
 {
 private:
   //Energy Functional form coefficient
-  Array<TCoefficientIntegrator<Number>*>       EFuncCoeff; //Coefficient Funcs
-  std::vector<Array<int>*>           InpBlocks;  //Coefficient Input Vars
-  tVector<dualNumber<Number,Number>> ElmDualData;//Dual vector containing element data
+//  Array<TCoefficientIntegrator<Number>*> EFuncCoeff; //Coefficient Funcs
+  std::vector<Array<int>*>               InpBlocks;  //Coefficient Input Vars
+  tVector<dualNumber<Number,Number>>     ElmDualData;//Dual vector containing element data
 
   //Reference to block vector of element data
   Array<int> *btoffs_inp, *bvoffs_inp;
   Array<int> *btoffs_out, *bvoffs_out;
 //  mutable BlockVector xBlockElm, ;
-  mfem::Vector                       EBlockVector, EBlockResidual;
-  tVector<dualNumber<Number,Number>> tEVec;        //Templated dual number vector for auto-diff
-
+  mfem::Vector  EBlockVector, EBlockResidual;
+  tVector<dualNumber<Number,Number>> tEVec;   //Templated dual number vector for auto-diff
 
   //The device and sizing based things
   bool use_dev=true;
-  const UINT64 nElms = 20, NDofs=8, NIntegs=0;
-  const UINT64 n = nElms*NDofs;
+  const int nElms = 20, NDofs=8, NIntegs=1;
+  const int n=nElms*NDofs;
   const mfem::Device     & device;
   const mfem::MemoryType & mt;
+  mfem::Operator *elem_restrict;
 
   //Preprocesses element DOF-data
   //into continuous data used for coefficients
@@ -59,10 +59,13 @@ public:
   //Constructor
   residualForm(const mfem::Device & device, const mfem::MemoryType & mt_);
 
+  //Destructor
+  ~residualForm();
+
    /// Adds an energy functional coeff to the
    /// list of them, these are differentiated
    /// to give the Residual form
-   void AddEnergyFuncCoeff(TCoefficientIntegrator<Number> *EFuncCoeff, std::vector<int> InpBlocks);
+//   void AddEnergyFuncCoeff(TCoefficientIntegrator<Number> *EFuncCoeff, std::vector<int> InpBlocks);
 
    /// Assembles the residual form i.e. sums over all domain/bdr coefficients.
    /** When @ref UseFastAssembly "UseFastAssembly(true)" has been called and the
@@ -80,8 +83,16 @@ public:
 /*****************************************/
 template<typename Number>
 residualForm<Number>::residualForm(const mfem::Device & device_, const mfem::MemoryType & mt_) :
- device(device_), mt(mt_), tEVec(NDofs,mt_), EBlockVector(n,mt_), EBlockResidual(n,mt_)
+ device(device_), mt(mt_), tEVec(NDofs,mt), EBlockVector(n,mt), EBlockResidual(n,mt)
 {};
+
+/*****************************************\
+!
+! Destroy the residual form
+!
+/*****************************************/
+template<typename Number>
+residualForm<Number>::~residualForm(){};
 
 /*****************************************\
 !
@@ -92,31 +103,31 @@ residualForm<Number>::residualForm(const mfem::Device & device_, const mfem::Mem
 template<typename Number>
 void residualForm<Number>::Assemble(const Vector & x)
 {
-  //Get the element block vectors
-//  gather(x,xBlockElm);
-
+  //Get the element data vectors
+//  elem_restrict->Mult(x,EBlockVector);
 
   //Some stuff for devices
-  auto ElmVecs = Reshape(EBlockVector.Read(use_dev), nElms, NDofs);
-  auto ElmRess = Reshape(EBlockResidual.ReadWrite(use_dev),  nElms, NDofs);
-  auto d_X = tEVec.ReadWrite(use_dev);
+  const auto ElmVecs = Reshape(EBlockVector.Read(use_dev), nElms, NDofs);
+  auto ElmRess       = Reshape(EBlockResidual.ReadWrite(use_dev), nElms, NDofs);
+  auto d_X           = Reshape(tEVec.ReadWrite(use_dev), NDofs); //= tEVec.ReadWrite(use_dev);
 
   mfem::forall_switch(use_dev, nElms, [=] MFEM_HOST_DEVICE (int IElm)
   {
     //Copy element vector in
-    for(UINT64 IDofs=0; IDofs<NDofs; IDofs++) d_X[IDofs].val = ElmVecs(IElm,IDofs);
+    for(int IDofs=0; IDofs<NDofs; IDofs++) d_X(IDofs).val = ElmVecs(IElm,IDofs);
 
     //Perturb each of the DOF's
-    for(UINT64 IDofs=0; IDofs<NDofs; IDofs++){
-      d_X[IDofs].grad = 1.0;
+    for(int IDofs=0; IDofs<NDofs; IDofs++){
+      d_X(IDofs).grad = 1.0;
       //Add on each of the integrator contribution
-      for(UINT64 IIntegs=0; IIntegs<NIntegs; IIntegs++){
-        ElmRess(IElm,IDofs) +=  d_X[IDofs].grad;
-      }
-      d_X[IDofs].grad = 0.0;
+      for(int IIntegs=0; IIntegs<NIntegs; IIntegs++){}
+      d_X(IDofs).grad = 0.0;
     }
 
     //Copy element vector out
-//    for(UINT64 IDofs=0; IDofs<NDofs; IDofs++) ElmRess(IElm,IDofs) = d_X[IDofs].grad;
+    for(int IDofs=0; IDofs<NDofs; IDofs++) ElmRess(IElm,IDofs) = d_X[IDofs].grad;
   });
+
+  //Get the residual vector
+//  elem_restrict->MultTranspose(x,EBlockVector);
 };
