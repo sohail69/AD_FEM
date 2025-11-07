@@ -78,14 +78,16 @@ function.
 
 The C++ dual number template is as follows:
 ```c++
-dualNumber<val_t,grad_t>
+val_t  val;
+grad_t grad;
+dualNumber<val_t,grad_t> x(val,grad);
 ```
 To calculate the first derivative (residual) only the dual number of the type of the
 precision of float is needed setting the grad component to one and evaluating the function, e.g. 
 ```c++
 double val=10.0 /*some arbitrary value for function eval*/
 dualNumber<double,double> x(val,1.0);
-df = f(x).grad;
+double df = f(x).grad;
 ```
 
 For the second derivative (Jacobian) a slightly more sophisticated route is needed. you need a dual
@@ -94,7 +96,7 @@ number of dual numbers
 double val=10.0 /*some arbitrary value for function eval*/
 dualNumber<double,double> a(val,1.0), b(1.0,0.0);
 dualNumber<dualNumber<double,double>,<dualNumber<double,double>> x(a,b);
-d2f = f(x).grad.grad;
+double d2f = f(x).grad.grad;
 ```
 
 For Vector input functionals (scalars with vector inputs) this makes the direct evaulation of the

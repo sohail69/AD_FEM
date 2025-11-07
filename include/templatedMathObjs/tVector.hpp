@@ -50,5 +50,7 @@ struct tVector{
   Numeric *HostReadWrite()
   { return mfem::ReadWrite(val, size, false); }
 
-   inline Numeric &operator[](int i) { return (*this)(i); }
+   inline Numeric &operator[](int i) { return (*this)(i); };
+
+   inline Numeric &operator()(int i) { return val[i]; };
 };
