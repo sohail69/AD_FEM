@@ -37,7 +37,7 @@ class TCoefficientIntegrator
    TCoefficientIntegrator(Array<int> used_blocks);
 
    /// Evaluate the integral of the element
-   Number Eval(Array<int> elm_btoffs, BlockVector elm_x)=0;
+   Number Eval(Array<int> elm_btoffs, mfem::Vector elm_x)=0;
 
    /// Coefficicient destructor
    ~TCoefficientIntegrator();

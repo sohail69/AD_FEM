@@ -12,7 +12,7 @@ struct PACKSTRUCT dualNumber{
   value_t     val;
   gradient_t  grad;
 
-  dualNumber(value_t r=0.0, gradient_t eps=0.0) : val(r), grad(eps){};
+  FORCE_INLINE dualNumber(value_t r=0.0, gradient_t eps=0.0): val(r), grad(eps){};
 };
 
 /***************************************\
@@ -22,7 +22,7 @@ struct PACKSTRUCT dualNumber{
 \***************************************/
 //Multiplication operator
 template<typename v_t, typename g_t>
-FORCE_INLINE dualNumber<v_t,g_t> operator*(const dualNumber<v_t,g_t> a, const dualNumber<v_t,g_t> b) 
+FORCE_INLINE constexpr dualNumber<v_t,g_t> operator*(const dualNumber<v_t,g_t> a, const dualNumber<v_t,g_t> b) 
 {
   dualNumber<v_t,g_t> newVal;
   newVal.val  = a.val*b.val;
@@ -32,7 +32,7 @@ FORCE_INLINE dualNumber<v_t,g_t> operator*(const dualNumber<v_t,g_t> a, const du
 
 //Division operator
 template<typename v_t, typename g_t>
-FORCE_INLINE dualNumber<v_t,g_t> operator/(const dualNumber<v_t,g_t> a, const dualNumber<v_t,g_t> b) 
+FORCE_INLINE constexpr dualNumber<v_t,g_t> operator/(const dualNumber<v_t,g_t> a, const dualNumber<v_t,g_t> b) 
 {
   dualNumber<v_t, g_t> newVal;
   newVal.val  = (a.val/b.val);
@@ -42,7 +42,7 @@ FORCE_INLINE dualNumber<v_t,g_t> operator/(const dualNumber<v_t,g_t> a, const du
 
 //Addition operator
 template<typename v_t, typename g_t>
-FORCE_INLINE dualNumber<v_t,g_t> operator+(const dualNumber<v_t,g_t> a, const dualNumber<v_t,g_t> b)
+FORCE_INLINE constexpr dualNumber<v_t,g_t> operator+(const dualNumber<v_t,g_t> a, const dualNumber<v_t,g_t> b)
 {
   dualNumber<v_t, g_t> newVal;
   newVal.val  = a.val + b.val;
@@ -52,7 +52,7 @@ FORCE_INLINE dualNumber<v_t,g_t> operator+(const dualNumber<v_t,g_t> a, const du
 
 //Subtraction operator
 template<typename v_t, typename g_t>
-FORCE_INLINE dualNumber<v_t,g_t> operator-(const dualNumber<v_t,g_t> a, const dualNumber<v_t,g_t> b)
+FORCE_INLINE constexpr dualNumber<v_t,g_t> operator-(const dualNumber<v_t,g_t> a, const dualNumber<v_t,g_t> b)
 {
   dualNumber<v_t, g_t> newVal;
   newVal.val  = a.val - b.val;
@@ -70,7 +70,7 @@ FORCE_INLINE dualNumber<v_t,g_t> operator-(const dualNumber<v_t,g_t> a, const du
 //Multiplication operator
 ///////////
 template<typename val_t, typename grad_t>
-FORCE_INLINE dualNumber<val_t,grad_t> operator*(const dualNumber<val_t,grad_t> dNum, const double Num) 
+FORCE_INLINE constexpr dualNumber<val_t,grad_t> operator*(const dualNumber<val_t,grad_t> dNum, const double Num) 
 {
   dualNumber<val_t,grad_t> newVal;
   newVal.val  = Num*dNum.val;
@@ -79,7 +79,7 @@ FORCE_INLINE dualNumber<val_t,grad_t> operator*(const dualNumber<val_t,grad_t> d
 };
 
 template<typename val_t, typename grad_t>
-FORCE_INLINE dualNumber<val_t,grad_t> operator*(const dualNumber<val_t,grad_t> dNum, const float Num) 
+FORCE_INLINE constexpr dualNumber<val_t,grad_t> operator*(const dualNumber<val_t,grad_t> dNum, const float Num) 
 {
   dualNumber<val_t,grad_t> newVal;
   newVal.val  = Num*dNum.val;
@@ -88,7 +88,7 @@ FORCE_INLINE dualNumber<val_t,grad_t> operator*(const dualNumber<val_t,grad_t> d
 };
 
 template<typename val_t, typename grad_t, typename Number>
-FORCE_INLINE dualNumber<val_t,grad_t> operator*(const Number Num, const dualNumber<val_t,grad_t> dNum) 
+FORCE_INLINE constexpr dualNumber<val_t,grad_t> operator*(const Number Num, const dualNumber<val_t,grad_t> dNum) 
 {
   return dNum*Num;
 };
@@ -97,7 +97,7 @@ FORCE_INLINE dualNumber<val_t,grad_t> operator*(const Number Num, const dualNumb
 //Division operator
 ///////////
 template<typename val_t, typename grad_t>
-FORCE_INLINE dualNumber<val_t,grad_t> operator/(const dualNumber<val_t,grad_t> dNum, const double Num)
+FORCE_INLINE constexpr dualNumber<val_t,grad_t> operator/(const dualNumber<val_t,grad_t> dNum, const double Num)
 {
   dualNumber<val_t,grad_t> newVal;
   newVal.val  = newVal.val/Num;
@@ -106,7 +106,7 @@ FORCE_INLINE dualNumber<val_t,grad_t> operator/(const dualNumber<val_t,grad_t> d
 };
 
 template<typename val_t, typename grad_t>
-FORCE_INLINE dualNumber<val_t,grad_t> operator/(const dualNumber<val_t,grad_t> dNum, const float Num)
+FORCE_INLINE constexpr dualNumber<val_t,grad_t> operator/(const dualNumber<val_t,grad_t> dNum, const float Num)
 {
    dualNumber<val_t,grad_t> newVal;
   newVal.val  = newVal.val/Num;
@@ -115,7 +115,7 @@ FORCE_INLINE dualNumber<val_t,grad_t> operator/(const dualNumber<val_t,grad_t> d
 };
 
 template<typename val_t, typename grad_t, typename Number>
-FORCE_INLINE dualNumber<val_t,grad_t> operator/(const Number Num, const dualNumber<val_t,grad_t> dNum)
+FORCE_INLINE constexpr dualNumber<val_t,grad_t> operator/(const Number Num, const dualNumber<val_t,grad_t> dNum)
 {
   dualNumber<val_t,grad_t> newVal(Num);
   return Num/dNum;
@@ -125,7 +125,7 @@ FORCE_INLINE dualNumber<val_t,grad_t> operator/(const Number Num, const dualNumb
 //Addition operator
 ///////////
 template<typename val_t, typename grad_t>
-FORCE_INLINE dualNumber<val_t,grad_t> operator+(const dualNumber<val_t,grad_t> dNum, const double Num)
+FORCE_INLINE constexpr dualNumber<val_t,grad_t> operator+(const dualNumber<val_t,grad_t> dNum, const double Num)
 {
   dualNumber<val_t,grad_t> newVal;
   newVal.val  = dNum.val  + Num;
@@ -134,7 +134,7 @@ FORCE_INLINE dualNumber<val_t,grad_t> operator+(const dualNumber<val_t,grad_t> d
 };
 
 template<typename val_t, typename grad_t>
-FORCE_INLINE dualNumber<val_t,grad_t> operator+(const dualNumber<val_t,grad_t> dNum, const float Num)
+FORCE_INLINE constexpr dualNumber<val_t,grad_t> operator+(const dualNumber<val_t,grad_t> dNum, const float Num)
 {
   dualNumber<val_t,grad_t> newVal;
   newVal.val  = dNum.val  + Num;
@@ -143,7 +143,7 @@ FORCE_INLINE dualNumber<val_t,grad_t> operator+(const dualNumber<val_t,grad_t> d
 };
 
 template<typename val_t, typename grad_t, typename Number>
-FORCE_INLINE dualNumber<val_t,grad_t> operator+(const Number Num, const dualNumber<val_t,grad_t> dNum)
+FORCE_INLINE constexpr dualNumber<val_t,grad_t> operator+(const Number Num, const dualNumber<val_t,grad_t> dNum)
 {
   dualNumber<val_t,grad_t> newVal(Num);
   return dNum + Num;
@@ -153,7 +153,7 @@ FORCE_INLINE dualNumber<val_t,grad_t> operator+(const Number Num, const dualNumb
 //Subtraction operator
 ///////////
 template<typename val_t, typename grad_t>
-FORCE_INLINE dualNumber<val_t,grad_t> operator-(const dualNumber<val_t,grad_t> dNum, const double Num)
+FORCE_INLINE constexpr dualNumber<val_t,grad_t> operator-(const dualNumber<val_t,grad_t> dNum, const double Num)
 {
   dualNumber<val_t,grad_t> newVal;
   newVal.val  = dNum.val  - Num;
@@ -162,7 +162,7 @@ FORCE_INLINE dualNumber<val_t,grad_t> operator-(const dualNumber<val_t,grad_t> d
 };
 
 template<typename val_t, typename grad_t>
-FORCE_INLINE dualNumber<val_t,grad_t> operator-(const dualNumber<val_t,grad_t> dNum, const float Num)
+FORCE_INLINE constexpr dualNumber<val_t,grad_t> operator-(const dualNumber<val_t,grad_t> dNum, const float Num)
 {
   dualNumber<val_t,grad_t> newVal;
   newVal.val  = dNum.val  - Num;
@@ -171,7 +171,7 @@ FORCE_INLINE dualNumber<val_t,grad_t> operator-(const dualNumber<val_t,grad_t> d
 };
 
 template<typename val_t, typename grad_t, typename Number>
-FORCE_INLINE dualNumber<val_t,grad_t> operator-(const Number Num, const dualNumber<val_t,grad_t> dNum)
+FORCE_INLINE constexpr dualNumber<val_t,grad_t> operator-(const Number Num, const dualNumber<val_t,grad_t> dNum)
 {
   dualNumber<val_t,grad_t> newVal(Num);
   return dNum - Num;

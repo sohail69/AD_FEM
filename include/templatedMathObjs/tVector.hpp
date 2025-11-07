@@ -13,44 +13,17 @@
 template<typename Numeric>
 struct tVector{
   //Definition of templated vector
-  mfem::Memory<Numeric> val;
-  UINT64 size, Iter;
+//  mfem::Memory<Numeric> data;
+  Numeric *data;
+  int size, Iter;
 
   tVector(){};
-  tVector(int size_, mfem::MemoryType mt): val(size_, mt), size(size_){};
-  ~tVector(){val.Delete();};
+//  tVector(int size_, mfem::MemoryType mt): data(size_, mt), size(size_){};
+//  ~tVector(){data.Delete();};
+  tVector(const int size_, mfem::MemoryType mt): size(size_){data = new Numeric[size_];};
+  ~tVector(){delete[] data;};
 
-
-  /***************************************\
-  !
-  !  Vector Memory and allocation operations
-  !
-  \***************************************/
-  /// Shortcut for mfem::Read(vec.GetMemory(), vec.Size(), on_dev).
-  const Numeric *Read(bool on_dev = true) const
-  { return mfem::Read(val, size, on_dev); }
-
-  /// Shortcut for mfem::Read(vec.GetMemory(), vec.Size(), false).
-  const Numeric *HostRead() const
-  { return mfem::Read(val, size, false); }
-
-  /// Shortcut for mfem::Write(vec.GetMemory(), vec.Size(), on_dev).
-  Numeric *Write(bool on_dev = true)
-  { return mfem::Write(val, size, on_dev); }
-
-  /// Shortcut for mfem::Write(vec.GetMemory(), vec.Size(), false).
-  Numeric *HostWrite()
-  { return mfem::Write(val, size, false); }
-
-  /// Shortcut for mfem::ReadWrite(vec.GetMemory(), vec.Size(), on_dev).
-  Numeric *ReadWrite(bool on_dev = true)
-  { return mfem::ReadWrite(val, size, on_dev); }
-
-  /// Shortcut for mfem::ReadWrite(vec.GetMemory(), vec.Size(), false).
-  Numeric *HostReadWrite()
-  { return mfem::ReadWrite(val, size, false); }
-
-   inline Numeric &operator[](int i) { return (*this)(i); };
-
-   inline Numeric &operator()(int i) { return val[i]; };
+  //Access Data
+  FORCE_INLINE Numeric &operator()(int I) {return data[I];};
+  FORCE_INLINE Numeric &operator[](int I) {return data[I];};
 };
