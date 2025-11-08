@@ -98,7 +98,6 @@ dualNumber<double,double> a(val,1.0), b(1.0,0.0);
 dualNumber<dualNumber<double,double>,<dualNumber<double,double>> x(a,b);
 double d2f = f(x).grad.grad;
 ```
-
 For Vector input functionals (scalars with vector inputs) this makes the direct evaulation of the
 residual and Jacobian quite natural on the element level without having to manually calculate 
 the derivatives of the functional. One just perturbs each component of the element vector 
@@ -125,8 +124,13 @@ equivalently :
 For the general case you may need a number of different derivatives and linear transforms of derivatives of
 a particular variables e.g.
 ```math
-\displaylines{ \vec{u}, \nabla(\vec{u}), \nabla X (\vec{u}) }
+\displaylines{ \vec{u}, \nabla(\vec{u}), \nabla \times (\vec{u}) }
 ```
 These can all be described as a set of linear transforms of the discrete data multiplied by derivatives of 
 the basis functions:
-
+```math
+\displaylines{ \left (\vec{u}, \nabla(\vec{u}), \nabla \times (\vec{u}) \right) = \b{G} \tilde{u}_{m} }
+```
+Where (G) is the lumped interpolation operator which combines all the basis (and derivatives) into a single
+flat tensor output. Each tensor has an (standard structured) iterator which can be used to recover the
+original structure of the variable.
