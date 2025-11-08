@@ -117,7 +117,6 @@ FORCE_INLINE constexpr dualNumber<val_t,grad_t> operator/(const dualNumber<val_t
 template<typename val_t, typename grad_t, typename Number>
 FORCE_INLINE constexpr dualNumber<val_t,grad_t> operator/(const Number Num, const dualNumber<val_t,grad_t> dNum)
 {
-  dualNumber<val_t,grad_t> newVal(Num);
   return Num/dNum;
 };
 
@@ -172,6 +171,5 @@ FORCE_INLINE constexpr dualNumber<val_t,grad_t> operator-(const dualNumber<val_t
 template<typename val_t, typename grad_t, typename Number>
 FORCE_INLINE constexpr dualNumber<val_t,grad_t> operator-(const Number Num, const dualNumber<val_t,grad_t> dNum)
 {
-  dualNumber<val_t,grad_t> newVal(Num);
   return -1.0*(dNum - Num);
 };

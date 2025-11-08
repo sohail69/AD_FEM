@@ -12,8 +12,8 @@ Some example functionals of integrated/sampled continuous variables include:
 ```math
 \displaylines{ e_{LE}(u) = \int_{\Omega} \left( \frac{1}{2} \vec{u} \cdot K \vec{u} 
                          + \vec{F} \cdot \vec{u} \right) d\Omega \quad Linear-elasticity \\
-               e_{HE}(T) = \int_{\Omega} T \cdot \left( \frac{\partial T}{\partial t} 
-                         + \Delta T \right) d\Omega \quad Heat-equation \\
+               e_{HE}(T) = \int_{\Omega} \left( T \cdot \frac{\partial T}{\partial t} 
+                         + \nabla T \cdot \nabla T \right) d\Omega \quad Heat-equation \\
                e_{HY}(u,p) = \int_{\Omega} \left( \delta_{ij} C_{ij}(u) + P ln(J(u)) 
                            - \frac{P^{2}}{2\lambda} \right) d\Omega \quad Mixed-NeoHookean-equation}
 ```

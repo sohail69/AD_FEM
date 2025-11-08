@@ -50,6 +50,11 @@ private:
   Array<TCoefficientIntegrator<Number>*> EFuncCoeff; //Coefficient Funcs
   std::vector<Array<int>*>               InpBlocks;  //Coefficient Input Vars
 
+  //Total energy functionals
+  std::function<dualSymNum<Number>(tVector<dualSymNum<Number>>)>  tEFunc1;
+  std::function<ddualSymNum<Number>(tVector<ddualSymNum<Number>>)> tEFunc2;
+
+
   //Reference to block vector of element data
   Array<int> *btoffs_inp, *bvoffs_inp;
   Array<int> *btoffs_out, *bvoffs_out;
@@ -117,6 +122,13 @@ nlForm<Number>::nlForm(const mfem::Device & dev, const mfem::MemoryType & mt_, c
   tEJVec = new tVector<ddualSymNum<Number>>(NDofs,mt);
 
   //////////////////////////
+  ///Set the functions
+  //////////////////////////
+  tEFunc1;
+  tEFunc2;
+
+
+  //////////////////////////
   ///Check sizes
   //////////////////////////
   std::cout <<  elMat.Width()         << std::endl;
@@ -178,7 +190,7 @@ void nlForm<Number>::Mult(const Vector & x, Vector & y) const
     //Perturb each of the DOF's
     for(int IDofs=0; IDofs<NDofs; IDofs++){
       (*tExVec)[IDofs].grad = 1.0;
-      EBlockResidual(IElm*NDofs + IDofs) += (*tExVec)[IDofs].grad;
+      EBlockResidual(IElm*NDofs + IDofs) += tEFunc1( *tExVec).grad;
       (*tExVec)[IDofs].grad = 0.0;
     }
   });
@@ -213,7 +225,7 @@ void nlForm<Number>::buildJacobian(const Vector & x) const
       //Perturb each of the DOF's in Jth-column
       for(int JDofs=0; JDofs<NDofs; JDofs++){
         (*tEJVec)[JDofs].grad.val = 1.0;
-        elMat(IDofs, JDofs) += (*tEJVec)[IDofs].grad.grad;
+        elMat(IDofs, JDofs) += tEFunc2(*tEJVec).grad.grad;
         (*tEJVec)[JDofs].grad.val = 0.0;
       }
       (*tEJVec)[IDofs].val.grad = 0.0;
