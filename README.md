@@ -123,6 +123,10 @@ equivalently :
 \displaylines{\frac{\partial u^{ip}}{\partial x_{j}} = \frac{\partial H^{ip}_{m}}{\partial x_{j}} \tilde{u}_{m} }
 ```
 For the general case you may need a number of different derivatives and linear transforms of derivatives of
-a particular variables e.g. $$\vec{u}$$, $$\nabla(\vec{u})$$, $$\nabla X (\vec{u}) $$, these can all be described as
-a set of linear transforms of the discrete data multiplied by derivatives of the basis functions:
+a particular variables e.g.
+```math
+\displaylines{ \vec{u}, \nabla(\vec{u}), \nabla X (\vec{u}) }
+```
+These can all be described as a set of linear transforms of the discrete data multiplied by derivatives of 
+the basis functions:
 
