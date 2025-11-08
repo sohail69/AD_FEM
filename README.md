@@ -133,4 +133,6 @@ the basis functions:
 ```
 Where (G) is the lumped interpolation operator which combines all the basis (and derivatives) into a single
 flat tensor output. Each tensor has an (standard structured) iterator which can be used to recover the
-original structure of the variable.
+original structure of the variable. Some basis functions and integral types require additional information
+to transform from the global to the local element frame besides simply element restriction,\ for example 
+H(div) and H(curl) elements.
