@@ -129,7 +129,7 @@ a particular variables e.g.
 These can all be described as a set of linear transforms of the discrete data multiplied by derivatives of 
 the basis functions:
 ```math
-\displaylines{ \left (\vec{u}, \nabla(\vec{u}), \nabla \times (\vec{u}) \right) = \b{G} \tilde{u}_{m} }
+\displaylines{ \left (\vec{u}, \nabla(\vec{u}), \nabla \times (\vec{u}) \right) = \mathbf{G} \tilde{u}_{m} }
 ```
 Where (G) is the lumped interpolation operator which combines all the basis (and derivatives) into a single
 flat tensor output. Each tensor has an (standard structured) iterator which can be used to recover the
