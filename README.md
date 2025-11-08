@@ -110,7 +110,7 @@ approximated by a weighted sampling rule, where the discrete DOF variables are s
 variables at the integration points. The continuous variables are then subject to the functionals above,
 this can be expressed as follows:
 ```math
-\displaylines{  e(u) = \int_{\Omega} f(u) d\Omega \~ \sum^{N_{ip}}_{ip=1} f(u) \cdot det(J) \cdot w_{ip} }
+\displaylines{  e(u) = \int_{\Omega} f(u) d\Omega \approx \sum^{N_{ip}}_{ip=1} f(u) \cdot det(J) \cdot w_{ip} }
 ```
 
 
