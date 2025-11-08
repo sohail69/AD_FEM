@@ -21,21 +21,22 @@ template<typename Num> using ddualSymNum = dualNumber<dualNumber<Num,Num>,dualNu
 !  A.u = c
 !
 ! The non-linear problem is solved by 
-! first making the problem stationary with
-! regards to the displacements:
+! first making the functional e(u) 
+! stationary with regards to the
+! displacements:
 ! R_m(u) = de/du_m
-!
-! This form does not take integrators as
-! inputs, rather it uses a coefficient to
-! directly derive the the residual and
-! Jacobian forms
 !
 ! Commonly Newtons method is used for
 ! solving the problem and the Jacobian
 ! is needed:
 ! J_mn(u) = dR_m(u)/du_n
 !
-/*****************************************/
+! This form does not take integrators as
+! inputs, rather it uses a coefficient to
+! directly derive the the residual and
+! Jacobian forms
+!
+\*****************************************/
 template<typename Number>
 class nlForm : public Operator
 {
@@ -100,7 +101,7 @@ public:
 !
 ! Construct the residual form
 !
-/*****************************************/
+\*****************************************/
 template<typename Number>
 nlForm<Number>::nlForm(const mfem::Device & dev, const mfem::MemoryType & mt_, const bool & usedev_):
                              Operator(n,n), device(dev), mt(mt_), use_dev(usedev_)
@@ -131,7 +132,7 @@ nlForm<Number>::nlForm(const mfem::Device & dev, const mfem::MemoryType & mt_, c
 !
 ! Destroy the residual form
 !
-/*****************************************/
+\*****************************************/
 template<typename Number>
 nlForm<Number>::~nlForm()
 {
@@ -144,10 +145,11 @@ nlForm<Number>::~nlForm()
 !  (Build? and) return the Jacobian
 !             operator
 !
-/*****************************************/
+\*****************************************/
 template<typename Number>
 mfem::Operator & nlForm<Number>::GetGradient(const mfem::Vector &x) const
 {
+  buildJacobian(x);
   return *Jacobian_f;
 };
 
@@ -157,7 +159,7 @@ mfem::Operator & nlForm<Number>::GetGradient(const mfem::Vector &x) const
 !     Assemble the residual vector
 !             and output
 !
-/*****************************************/
+\*****************************************/
 template<typename Number>
 void nlForm<Number>::Mult(const Vector & x, Vector & y) const
 {
@@ -168,7 +170,7 @@ void nlForm<Number>::Mult(const Vector & x, Vector & y) const
   const auto ElmVecs = Reshape(EBlockVector.Read(), NDofs, nElms);
 //  auto ElmRess       = Reshape(EBlockResidual.ReadWrite(), NDofs, nElms);
 
-  for(int IElm=0; IElm<nElms; IElm++) //  mfem::forall_switch(use_dev, nElms, [=] MFEM_HOST_DEVICE (int IElm)
+  mfem::forall_switch(use_dev, nElms, [=] MFEM_HOST_DEVICE (int IElm)
   {
     //Copy element vector in
     for(int IDofs=0; IDofs<NDofs; IDofs++) (*tExVec)[IDofs].val = ElmVecs(IElm, IDofs);
@@ -179,7 +181,7 @@ void nlForm<Number>::Mult(const Vector & x, Vector & y) const
       EBlockResidual(IElm*NDofs + IDofs) += (*tExVec)[IDofs].grad;
       (*tExVec)[IDofs].grad = 0.0;
     }
-  }//});
+  });
 
   //Get the residual vector
   if(elem_restrict        != NULL) elem_restrict->MultTranspose(EBlockResidual,y);
@@ -192,7 +194,7 @@ void nlForm<Number>::Mult(const Vector & x, Vector & y) const
 !    Assemble and build the Jacobian
 !               Operator
 !
-/*****************************************/
+\*****************************************/
 template<typename Number>
 void nlForm<Number>::buildJacobian(const Vector & x) const
 {
@@ -200,7 +202,7 @@ void nlForm<Number>::buildJacobian(const Vector & x) const
   if(elem_restrict != NULL) elem_restrict->Mult(x,EBlockVector);
   const auto ElmVecs = Reshape(EBlockVector.Read(), NDofs, nElms);
 
-  for(int IElm=0; IElm<nElms; IElm++) //  mfem::forall_switch(use_dev, nElms, [=] MFEM_HOST_DEVICE (int IElm)
+  mfem::forall_switch(use_dev, nElms, [=] MFEM_HOST_DEVICE (int IElm)
   {
     //Copy element vector in
     for(int IDofs=0; IDofs<NDofs; IDofs++) (*tEJVec)[IDofs].val.val = ElmVecs(IDofs, IElm);
@@ -216,5 +218,5 @@ void nlForm<Number>::buildJacobian(const Vector & x) const
       }
       (*tEJVec)[IDofs].val.grad = 0.0;
     }
-  }//});
+  });
 };

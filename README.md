@@ -8,7 +8,7 @@ constraints(A):
 \displaylines{Min[e(u_1, u_2,...,u_n)] \\
               A.u = c}
 ```
-Some example functionals include:
+Some example functionals of integrated/sampled continuous variables include:
 ```math
 \displaylines{ e_{LE}(u) = \int_{\Omega} \left( \frac{1}{2} \vec{u} \cdot K \vec{u} 
                          + \vec{F} \cdot \vec{u} \right) d\Omega \quad Linear-elasticity \\
@@ -103,3 +103,14 @@ For Vector input functionals (scalars with vector inputs) this makes the direct 
 residual and Jacobian quite natural on the element level without having to manually calculate 
 the derivatives of the functional. One just perturbs each component of the element vector 
 (one by one) and returns the appropriate dual component.
+
+# Finite element continuous function sampling
+Finite element weak forms evaluate integrals, these integrals are often (except in special cases) 
+approximated by a weighted sampling rule, where the discrete DOF variables are sampled as continuous
+variables at the integration points. The continuous variables are then subject to the functionals above,
+this can be expressed as follows:
+```math
+\displaylines{  e(u) = \int_{\Omega} f(u) d\Omega ~ \sum^{N_{ip}}_{ip=1} f(u) \cdot det(\bold{J}) \cdot w_{ip} }
+```
+
+
