@@ -106,7 +106,7 @@ the derivatives of the functional. One just perturbs each component of the eleme
 
 # Finite element continuous function sampling
 Finite element weak forms evaluate integrals, these integrals are often (except in special cases) 
-approximated by a weighted sampling rule, where the discrete DOF variables are sampled as continuous
+approximated by a weighted sampling rule, where the discrete DOF variables are sampled as (piecewise) continuous
 variables at the integration points. The approximation of the integral can be defined as follows:
 ```math
 \displaylines{  e(u) = \int_{\Omega} f(u) d\Omega \approx \sum^{N_{ip}}_{ip=1} f(u_{ip}) \cdot det(J) \cdot w_{ip} }
