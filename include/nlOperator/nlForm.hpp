@@ -124,8 +124,8 @@ nlForm<Number>::nlForm(const mfem::Device & dev, const mfem::MemoryType & mt_, c
   //////////////////////////
   ///Set the functions
   //////////////////////////
-  tEFunc1;
-  tEFunc2;
+//  tEFunc1;
+ // tEFunc2;
 
 
   //////////////////////////
@@ -190,7 +190,7 @@ void nlForm<Number>::Mult(const Vector & x, Vector & y) const
     //Perturb each of the DOF's
     for(int IDofs=0; IDofs<NDofs; IDofs++){
       (*tExVec)[IDofs].grad = 1.0;
-      EBlockResidual(IElm*NDofs + IDofs) += tEFunc1( *tExVec).grad;
+//      EBlockResidual(IElm*NDofs + IDofs) += tEFunc1( *tExVec).grad;
       (*tExVec)[IDofs].grad = 0.0;
     }
   });
@@ -225,7 +225,7 @@ void nlForm<Number>::buildJacobian(const Vector & x) const
       //Perturb each of the DOF's in Jth-column
       for(int JDofs=0; JDofs<NDofs; JDofs++){
         (*tEJVec)[JDofs].grad.val = 1.0;
-        elMat(IDofs, JDofs) += tEFunc2(*tEJVec).grad.grad;
+//        elMat(IDofs, JDofs) += tEFunc2(*tEJVec).grad.grad;
         (*tEJVec)[JDofs].grad.val = 0.0;
       }
       (*tEJVec)[IDofs].val.grad = 0.0;

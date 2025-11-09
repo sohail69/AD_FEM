@@ -129,10 +129,10 @@ a particular variables e.g.
 These can all be described as a set of linear transforms of the discrete data multiplied by derivatives of 
 the basis functions:
 ```math
-\displaylines{ \left (\vec{u}, \nabla \vec{u}, \nabla \times \vec{u} \right) = \mathbf{G} \tilde{u} }
+\displaylines{ \left (\vec{u}, \nabla \vec{u}, \nabla \times \vec{u} \right) = \mathbf{Q} \tilde{u} }
 ```
-Where (G) is the lumped interpolation operator which combines all the basis (and derivatives) into a single
+Where (Q) is the lumped interpolation operator which combines all the basis (and derivatives) into a single
 flat tensor output. Each tensor has an (standard structured) iterator which can be used to recover the
 original structure of the variable. Some basis functions and integral types require additional information
-to transform from the global to the local element frame besides simply element restriction,\ for example 
+to transform from the global to the local element frame besides simply element restriction, for example 
 H(div) and H(curl) elements.

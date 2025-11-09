@@ -60,6 +60,94 @@ FORCE_INLINE constexpr dualNumber<v_t,g_t> operator-(const dualNumber<v_t,g_t> a
   return newVal;
 };
 
+/***************************************\
+!
+!  Dual number comparison operations
+!
+\***************************************/
+//equivalence operator
+template<typename v_t, typename g_t, typename Number>
+FORCE_INLINE constexpr bool operator==(const dualNumber<v_t,g_t> a, const Number b)
+{
+  return (a.val == b);
+};
+
+template<typename v_t, typename g_t, typename Number>
+FORCE_INLINE constexpr bool operator==(const Number b, const dualNumber<v_t,g_t> a)
+{
+  return (a.val == b);
+};
+
+
+//inequivalence operator
+template<typename v_t, typename g_t, typename Number>
+FORCE_INLINE constexpr bool operator!=(const Number a, const dualNumber<v_t,g_t> b)
+{
+  return (a != b.val);
+};
+
+template<typename v_t, typename g_t, typename Number>
+FORCE_INLINE constexpr bool operator!=(const dualNumber<v_t,g_t> a, const Number b)
+{
+  return (a.val != b);
+};
+
+
+//more than operator
+template<typename v_t, typename g_t, typename Number>
+FORCE_INLINE constexpr bool operator>(const  Number a, const dualNumber<v_t,g_t> b)
+{
+  return a > b.val;
+};
+
+template<typename v_t, typename g_t, typename Number>
+FORCE_INLINE constexpr bool operator>(const dualNumber<v_t,g_t> a, const Number b)
+{
+  return a.val > b;
+}
+
+
+//less than operator
+template<typename v_t, typename g_t, typename Number>
+FORCE_INLINE constexpr bool operator<(const Number a, const dualNumber<v_t,g_t> b)
+{
+  return a < b.val;
+};
+
+template<typename v_t, typename g_t, typename Number>
+FORCE_INLINE constexpr bool operator<(const dualNumber<v_t,g_t> a, const Number b)
+{
+  return a.val < b;
+};
+
+
+//more than equal operator
+template<typename v_t, typename g_t, typename Number>
+FORCE_INLINE constexpr bool operator>=(const dualNumber<v_t,g_t> a, const Number b)
+{
+  return a.val >= b;
+};
+
+template<typename v_t, typename g_t, typename Number>
+FORCE_INLINE constexpr bool operator>=(const Number a, const dualNumber<v_t,g_t> b)
+{
+  return a >= b.val;
+};
+
+
+//less than equal operator
+template<typename v_t, typename g_t, typename Number>
+FORCE_INLINE constexpr bool operator<=(const dualNumber<v_t,g_t> a, const Number b)
+{
+  return a.val <= b;
+};
+
+template<typename v_t, typename g_t, typename Number>
+FORCE_INLINE constexpr bool operator<=(const Number a, const dualNumber<v_t,g_t> b)
+{
+  return a <= b.val;
+};
+
 
 /***************************************\
 !

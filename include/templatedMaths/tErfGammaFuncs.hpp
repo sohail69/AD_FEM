@@ -5,11 +5,11 @@
 // Returns the error function
 // function of a number
 template<typename Number>
-Number erf(Number x){
-  const double coeff=(4.0/3.14159);
-  const double n1=279.0/10000000.0      , n2=-303923.0/10000000.0;
-  const double n3=34783.0/10000000.0    , n4=40793.0/10000000.0;
-  const double d1=-21941279.0/10000000.0, d2=3329407.0/10000000.0;
+FORCE_INLINE Number erf(Number x){
+  constexpr double coeff=(4.0/3.14159);
+  constexpr double n1=279.0/10000000.0      , n2=-303923.0/10000000.0;
+  constexpr double n3=34783.0/10000000.0    , n4=40793.0/10000000.0;
+  constexpr double d1=-21941279.0/10000000.0, d2=3329407.0/10000000.0;
   Number Q, D, x1, one(1.00);
   x1 = x/(x+1);
   Q = n1*x1 + n2*x1*x1 + n3*x1*x1*x1 + n4*x1*x1*x1*x1;
@@ -21,7 +21,7 @@ Number erf(Number x){
 // Returns the complementary error
 // function of a number
 template<typename Number>
-Number erfc(Number x){
+FORCE_INLINE Number erfc(Number x){
   Number one(1.00);
   return (one - erf(x));
 };
@@ -30,7 +30,7 @@ Number erfc(Number x){
 // Returns the gamma
 // function of a number
 template<typename Number>
-Number tgamma(Number x){
+FORCE_INLINE Number tgamma(Number x){
   return Number(0.00);
 };
 
@@ -38,6 +38,6 @@ Number tgamma(Number x){
 // Returns the log gamma
 // function of a number
 template<typename Number>
-Number lgamma(Number x){
+FORCE_INLINE Number lgamma(Number x){
   return log<Number>(  tgamma<Number>( sqrt<Number>(x*x) ) );
 };
