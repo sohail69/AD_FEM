@@ -42,7 +42,7 @@ Newtons Method is given by:
 ```
 The Jacobian is given by:
 ```math
-\displaylines{J_mn(u) = \frac{\partial e(u)}{\partial u_m \partial u_n}}
+\displaylines{J_{mn}(u) = \frac{\partial e(u)}{\partial u_m \partial u_n}}
 ```
 
 # Dual Numbers and Forward Auto-Diff
