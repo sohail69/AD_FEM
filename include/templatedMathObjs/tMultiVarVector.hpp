@@ -3,7 +3,6 @@
 #include "../../../../MFEM_STUFF/mfem-4.7/build/include/mfem/general/globals.hpp"
 #include "../../../../MFEM_STUFF/mfem-4.7/build/include/mfem/general/mem_manager.hpp"
 #include "../../../../MFEM_STUFF/mfem-4.7/build/include/mfem/general/device.hpp"
-
 #include "mfem.hpp"
 
 //
@@ -16,7 +15,7 @@ template<typename Numeric>
 struct tVarVectorMFEM{
   //Variable vector and iterator
   mfem::Memory<int> offsets;
-//  mfem::Memory<multiIterator> Iters;
+//mfem::Memory<multiIterator> Iters;
   mfem::Memory<Numeric> varData;
   int size;
 
@@ -31,19 +30,31 @@ struct tVarVectorMFEM{
 
 
 //
-// multi-iterator used to
+// tensor-multi-iterator Functor used to
 // access flattened muli-dimensional
 // vars
 //
-template<unsigned Dim>
+template<unsigned RANK>
 struct multiIterator{
-  static const unsigned dim=Dim;
-  unsigned *Sizes, *Iter;
+  static const unsigned rank=RANK;
+  unsigned Sizes[RANK];
 
-  //Constructor and destructor
-  multiIterator(){ Iter=new unsigned[Dim]; Sizes=new unsigned[Dim];};
-  ~multiIterator(){ delete[] Iter, Sizes;};
+  //Constructor
+  multiIterator(unsigned Sizes_[RANK]){
+    #pragma unroll
+    for(unsigned J=0; J<rank; J++) Sizes[J]=Sizes_[J];
+  };
 
   //Accessor multi-iter flattening
-  FORCE_INLINE unsigned operator()(const unsigned Iter[dim]){return 0; };
+  FORCE_INLINE unsigned operator()(const unsigned Iter[rank]){
+    unsigned L, I=0;
+    #pragma unroll
+    for(unsigned J=0; J<rank; J++){
+      L=Iter[J];
+      #pragma unroll
+      for(unsigned K=0; K<(rank-J); K++) L = L*Sizes[K];
+      I=I+L;
+    }
+    return I;
+  };
 };

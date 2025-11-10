@@ -37,7 +37,7 @@ template<typename Num> using ddualSymNum = dualNumber<dualNumber<Num,Num>,dualNu
 !
 \*****************************************/
 template<typename Number>
-class nlForm : public Operator
+class tADNLForm : public Operator
 {
 private:
   //Reference to essential boundary conditions
@@ -73,10 +73,10 @@ private:
 
 public:
   //Constructor
-  nlForm(const mfem::Device & device, const mfem::MemoryType & mt_, const bool & use_dev_);
+  tADNLForm(const mfem::Device & device, const mfem::MemoryType & mt_, const bool & use_dev_);
 
   //Destructor
-  ~nlForm();
+  ~tADNLForm();
 
   /// Adds an energy functional coeff to the
   /// list of them, these are differentiated
@@ -102,7 +102,7 @@ public:
 !
 \*****************************************/
 template<typename Number>
-nlForm<Number>::nlForm(const mfem::Device & dev, const mfem::MemoryType & mt_, const bool & usedev_):
+tADNLForm<Number>::tADNLForm(const mfem::Device & dev, const mfem::MemoryType & mt_, const bool & usedev_):
                              Operator(n,n), device(dev), mt(mt_), use_dev(usedev_)
 {
   //////////////////////////
@@ -141,7 +141,7 @@ nlForm<Number>::nlForm(const mfem::Device & dev, const mfem::MemoryType & mt_, c
 !
 \*****************************************/
 template<typename Number>
-nlForm<Number>::~nlForm()
+tADNLForm<Number>::~tADNLForm()
 {
   delete tExVec, tEJVec, EBlockVector, EBlockResidual;
 };
@@ -154,7 +154,7 @@ nlForm<Number>::~nlForm()
 !
 \*****************************************/
 template<typename Number>
-mfem::Operator & nlForm<Number>::GetGradient(const mfem::Vector &x) const
+mfem::Operator & tADNLForm<Number>::GetGradient(const mfem::Vector &x) const
 {
   buildJacobian(x);
   return *Jacobian_f;
@@ -168,7 +168,7 @@ mfem::Operator & nlForm<Number>::GetGradient(const mfem::Vector &x) const
 !
 \*****************************************/
 template<typename Number>
-void nlForm<Number>::Mult(const Vector & x, Vector & y) const
+void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
 {
   //Get the element data vectors
   if(elem_restrict != NULL) elem_restrict->Mult(x,*EBlockVector);
@@ -190,7 +190,7 @@ void nlForm<Number>::Mult(const Vector & x, Vector & y) const
     }
   });
 
-  //Get the residual vector
+  //Get the residual vector and apply the essential BC's
   if(elem_restrict        != NULL) elem_restrict->MultTranspose(*EBlockResidual,y);
   if(ess_bcs_tdofs.Size() != 0)    y.SetSubVector(ess_bcs_tdofs,0.00);
 };
@@ -203,7 +203,7 @@ void nlForm<Number>::Mult(const Vector & x, Vector & y) const
 !
 \*****************************************/
 template<typename Number>
-void nlForm<Number>::buildJacobian(const Vector & x) const
+void tADNLForm<Number>::buildJacobian(const Vector & x) const
 {
   //Get the element data vectors
   if(elem_restrict != NULL) elem_restrict->Mult(x,*EBlockVector);

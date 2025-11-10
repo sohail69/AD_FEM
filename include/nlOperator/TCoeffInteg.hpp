@@ -1,6 +1,7 @@
 #pragma once
 #include <functional>
 #include "mfem.hpp"
+#include "../templatedMathObjs/tMultiVarVector.hpp"
 
 /*****************************************\
 !
@@ -16,8 +17,6 @@ class AbstractInputCleaner
   public:
    /// Define a time-independent templated coefficient
    AbstractInputCleaner(Array<int> blocks){};
-
- 
 };
 
 
@@ -25,7 +24,7 @@ class AbstractInputCleaner
 !
 !  Templated energy functional coefficient
 !  integrator Base class:
-!    Takes in a block vector and integrates
+!   -Takes in a sampled Var and evaluates
 !    the energy functional.
 !
 \*****************************************/
@@ -37,7 +36,7 @@ class TCoefficientIntegrator
    TCoefficientIntegrator(Array<int> used_blocks);
 
    /// Evaluate the integral of the element
-   Number Eval(Array<int> elm_btoffs, mfem::Vector elm_x)=0;
+   Number Eval(Array<int> InputBlocks, tVarVectorMFEM<Number> elm_vars);
 
    /// Coefficicient destructor
    ~TCoefficientIntegrator();

@@ -63,7 +63,7 @@ Dual numbers in conjunction with templated functions can be used to
 exactly calculate derivatives. Given a function f(x) using limits the derivative
 of that function is defined as:
 ```math
-\displaylines{ f'(x) = Lim_{h \rightarrow 0} \frac{ f(x+h) - f(x) }{h} }
+\displaylines{ f'(x) = Lim_{(h \rightarrow 0)} \left[ \frac{ f(x+h) - f(x) }{h} \right] }
 ```
 In the context above (h) can be replaced by a dual number, such that the equation
 becomes transformed into:
@@ -123,7 +123,7 @@ matrix/function, for example if the user wanted to get the sampled gradient of a
 For the general case you may need a number of different derivatives and linear transforms of derivatives of
 a particular variables e.g.
 ```math
-\displaylines{ \vec{u}, \nabla(\vec{u}), \nabla \times (\vec{u}) }
+\displaylines{ \vec{u}, \nabla \vec{u}, \nabla \times \vec{u} }
 ```
 These can all be described as a set of linear transforms of the discrete data multiplied by derivatives of 
 the basis functions:
