@@ -79,3 +79,53 @@ FORCE_INLINE Number log2(const Number x)
   Number lnX = log<Number>(x);
   return lnX/ln2;
 };
+
+
+// Returns the binary log
+// of a number (base 2)
+template<typename Number>
+FORCE_INLINE Number logb(const Number x)
+{
+  return  log2<Number>(x);
+};
+
+
+// Returns the value from significand
+// and exponent
+template<typename Number>
+FORCE_INLINE Number ldexp(const Number x, const Number y)
+{
+  return  x*exp2<Number>(y);
+};
+
+
+// Returns the value of the
+// natural log plus one
+template<typename Number>
+FORCE_INLINE Number log1p(const Number x)
+{
+  Number one(1.0);
+  return  one + log<Number>(x);
+};
+
+
+// Returns the Scale significand using
+// floating-point base exponent
+template<typename Number>
+FORCE_INLINE Number scalbn(const Number x, int n)
+{
+  double nd(n);
+  Number N(nd);
+  return ldexp(x, N);
+};
+
+
+// Returns the Scale significand using
+// floating-point base exponent (long)
+template<typename Number>
+FORCE_INLINE Number scalbln(const Number x, long int n)
+{
+  double nd(n);
+  Number N(nd);
+  return ldexp(x, N);
+};

@@ -135,4 +135,9 @@ Where (Q) is the lumped interpolation operator which combines all the basis (and
 flat tensor output. Each tensor has an (standard structured) iterator which can be used to recover the
 original structure of the variable. Some basis functions and integral types require additional information
 to transform from the global to the local element frame besides simply element restriction, for example 
-H(div) and H(curl) elements.
+H(div) and H(curl) elements. The interpolation matrix in this case can be further multiplicatively split
+into a global and local transform component, (global and isogeometric) this splitting allows the isogeometric
+interpolator to be calculated and stored beforehand, this is particularly useful for deforming meshes and AMR.
+```math
+\displaylines{ \left (\vec{u}, \nabla \vec{u}, \nabla \times \vec{u} \right) = \mathbf{T} \mathbf{Q^{Iso}} \tilde{u} }
+```

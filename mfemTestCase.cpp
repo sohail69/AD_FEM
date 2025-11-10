@@ -11,6 +11,7 @@
 #include "include/templatedMathObjs/dualNumber.hpp"
 #include "include/templatedMathObjs/complexNumber.hpp"
 #include "include/templatedMathObjs/tVector.hpp"
+#include "include/templatedMathObjs/tMultiVarVector.hpp"
 
 // Mathematical Functions
 #include "include/templatedMaths/tCmath.hpp"
