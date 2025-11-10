@@ -43,8 +43,8 @@ class nlForm : public Operator
 private:
   //Reference to essential boundary conditions
   std::vector<ParFiniteElementSpace*> parFEs;
-  std::vector<Array<int>*> ess_bcs_markers;
-  Array<int> ess_bcs_tdofs;
+  std::vector<Array<int>*>            ess_bcs_markers;
+  Array<int>                          ess_bcs_tdofs;
 
   //Energy Functional form coefficient
   Array<TCoefficientIntegrator<Number>*> EFuncCoeff; //Coefficient Funcs
@@ -54,11 +54,10 @@ private:
   std::function<dualSymNum<Number>(tVector<dualSymNum<Number>>)>  tEFunc1;
   std::function<ddualSymNum<Number>(tVector<ddualSymNum<Number>>)> tEFunc2;
 
-
   //Reference to block vector of element data
   Array<int> *btoffs_inp, *bvoffs_inp;
   Array<int> *btoffs_out, *bvoffs_out;
-  mutable mfem::Vector  EBlockVector, EBlockResidual;
+  mutable mfem::Vector  *EBlockVector, *EBlockResidual;
   mutable mfem::DenseMatrix elMat;
 
   //Used for directional derivatives Templated
@@ -104,20 +103,19 @@ public:
 
 /*****************************************\
 !
-! Construct the residual form
+! Construct the non-linear form
 !
 \*****************************************/
 template<typename Number>
 nlForm<Number>::nlForm(const mfem::Device & dev, const mfem::MemoryType & mt_, const bool & usedev_):
                              Operator(n,n), device(dev), mt(mt_), use_dev(usedev_)
-                           , EBlockVector(n,mt_), EBlockResidual(n,mt_)
 {
   //////////////////////////
   ///Set sizes
   //////////////////////////
   elMat.SetSize(NDofs);
-  EBlockVector.SetSize(n);
-  EBlockResidual.SetSize(n);
+  EBlockVector   = new mfem::Vector(n,mt_);
+  EBlockResidual = new mfem::Vector(n,mt_);
   tExVec = new tVector<dualSymNum<Number>>(NDofs,mt);
   tEJVec = new tVector<ddualSymNum<Number>>(NDofs,mt);
 
@@ -131,12 +129,12 @@ nlForm<Number>::nlForm(const mfem::Device & dev, const mfem::MemoryType & mt_, c
   //////////////////////////
   ///Check sizes
   //////////////////////////
-  std::cout <<  elMat.Width()         << std::endl;
-  std::cout <<  elMat.Height()        << std::endl;
-  std::cout <<  tExVec->size          << std::endl;
-  std::cout <<  tEJVec->size          << std::endl;
-  std::cout <<  EBlockVector.Size()   << std::endl;
-  std::cout <<  EBlockResidual.Size() << std::endl;
+  std::cout <<  elMat.Width()          << std::endl;
+  std::cout <<  elMat.Height()         << std::endl;
+  std::cout <<  tExVec->size           << std::endl;
+  std::cout <<  tEJVec->size           << std::endl;
+  std::cout <<  EBlockVector->Size()   << std::endl;
+  std::cout <<  EBlockResidual->Size() << std::endl;
 };
 
 
@@ -148,7 +146,7 @@ nlForm<Number>::nlForm(const mfem::Device & dev, const mfem::MemoryType & mt_, c
 template<typename Number>
 nlForm<Number>::~nlForm()
 {
-  delete tExVec, tEJVec;
+  delete tExVec, tEJVec, EBlockVector, EBlockResidual;
 };
 
 
@@ -176,11 +174,11 @@ template<typename Number>
 void nlForm<Number>::Mult(const Vector & x, Vector & y) const
 {
   //Get the element data vectors
-  if(elem_restrict != NULL) elem_restrict->Mult(x,EBlockVector);
+  if(elem_restrict != NULL) elem_restrict->Mult(x,*EBlockVector);
 
   //Some stuff for devices
-  const auto ElmVecs = Reshape(EBlockVector.Read(), NDofs, nElms);
-//  auto ElmRess       = Reshape(EBlockResidual.ReadWrite(), NDofs, nElms);
+  const auto ElmVecs = Reshape(EBlockVector->Read(), NDofs, nElms);
+  auto ElmRess       = Reshape(EBlockResidual->ReadWrite(), NDofs, nElms);
 
   mfem::forall_switch(use_dev, nElms, [=] MFEM_HOST_DEVICE (int IElm)
   {
@@ -190,13 +188,13 @@ void nlForm<Number>::Mult(const Vector & x, Vector & y) const
     //Perturb each of the DOF's
     for(int IDofs=0; IDofs<NDofs; IDofs++){
       (*tExVec)[IDofs].grad = 1.0;
-//      EBlockResidual(IElm*NDofs + IDofs) += tEFunc1( *tExVec).grad;
+//    ElmRess(IElm,IDofs) += tEFunc1( *tExVec).grad;
       (*tExVec)[IDofs].grad = 0.0;
     }
   });
 
   //Get the residual vector
-  if(elem_restrict        != NULL) elem_restrict->MultTranspose(EBlockResidual,y);
+  if(elem_restrict        != NULL) elem_restrict->MultTranspose(*EBlockResidual,y);
   if(ess_bcs_tdofs.Size() != 0)    y.SetSubVector(ess_bcs_tdofs,0.00);
 };
 
@@ -211,8 +209,8 @@ template<typename Number>
 void nlForm<Number>::buildJacobian(const Vector & x) const
 {
   //Get the element data vectors
-  if(elem_restrict != NULL) elem_restrict->Mult(x,EBlockVector);
-  const auto ElmVecs = Reshape(EBlockVector.Read(), NDofs, nElms);
+  if(elem_restrict != NULL) elem_restrict->Mult(x,*EBlockVector);
+  const auto ElmVecs = Reshape(EBlockVector->Read(), NDofs, nElms);
 
   mfem::forall_switch(use_dev, nElms, [=] MFEM_HOST_DEVICE (int IElm)
   {
