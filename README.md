@@ -110,14 +110,13 @@ variables at the integration points. The approximation of the integral can be de
 ```math
 \displaylines{  e(u) = \int_{\Omega} f(u) d\Omega \approx \sum^{N_{ip}}_{ip=1} f(u_{ip}) \cdot det(J) \cdot w_{ip} }
 ```
-The variable (u_ip) is the sampled continuous variable which is given by:
+The variable ($$u^{ip}$$) is the sampled continuous variable which is given by:
 ```math
 \displaylines{u^{ip} = H^{ip}_{m} \tilde{u}_{m} }
 ```
 Where (H) is the discrete field interpolator sampled at the integration point and ($$\tilde{u}$$) is the
 discrete variable/DOF that is being interpolated/solved-for. The interpolation is often a linear 
-matrix/function which weights. For example if the user wanted to get the sampled gradient of a field
-equivalently :
+matrix/function, for example if the user wanted to get the sampled gradient of a field it is:
 ```math
 \displaylines{\frac{\partial u^{ip}}{\partial x_{j}} = \frac{\partial H^{ip}_{m}}{\partial x_{j}} \tilde{u}_{m} }
 ```
