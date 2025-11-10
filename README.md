@@ -138,5 +138,12 @@ H(div) and H(curl) elements. The interpolation matrix in this case can be furthe
 into a global and local transform component, (global and isogeometric) this splitting allows the isogeometric
 interpolator to be calculated and stored beforehand, this is particularly useful for deforming meshes and AMR.
 ```math
-\displaylines{ \left (\vec{u}, \nabla \vec{u}, \nabla \times \vec{u} \right) = \mathbf{T} \mathbf{Q^{Iso}} \tilde{u} }
+\displaylines{ \left (\vec{u}, \nabla \vec{u}, \nabla \times \vec{u} \right) = \mathbf{T} \mathbf{Q_{Iso}} \tilde{u} }
 ```
+The energy-functional though given in terms of the abstract DOF's is often more conveniently written in terms
+the continuous variables thus the forming of the (sampled) continuous variable can be done before the energy
+functional is applied.
+```math
+\displaylines{ e(u^{ip}) = e(\mathbf{T^{ip}} \mathbf{Q^{ip}_{Iso}} \tilde{u}) }
+```
+
