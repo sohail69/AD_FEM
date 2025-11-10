@@ -1,4 +1,5 @@
 #pragma once
+#include "../UtilityObjects/macros.hpp"
 #include "tExpLogFuncs.hpp"
 
 // Returns the pow(x,y) function

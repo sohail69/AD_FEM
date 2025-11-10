@@ -1,5 +1,5 @@
 #pragma once
-#include "../macros.hpp"
+#include "../UtilityObjects/macros.hpp"
 #include "../../../../MFEM_STUFF/mfem-4.7/build/include/mfem/general/globals.hpp"
 #include "../../../../MFEM_STUFF/mfem-4.7/build/include/mfem/general/mem_manager.hpp"
 #include "../../../../MFEM_STUFF/mfem-4.7/build/include/mfem/general/device.hpp"
@@ -14,7 +14,7 @@
 
 template<typename Numeric>
 struct tVarVectorMFEM{
-  //Definition of templated vector
+  //Variable vector and iterator
   mfem::Memory<int> offsets;
 //  mfem::Memory<multiIterator> Iters;
   mfem::Memory<Numeric> varData;

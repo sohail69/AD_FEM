@@ -12,6 +12,3 @@ using INT64  = long int;
 
 //Pack the struct
 #define PACKSTRUCT __attribute__ ((packed))
-
-//parallel for loop
-#define forAll(I, N) for(I=0; I<N; I++)

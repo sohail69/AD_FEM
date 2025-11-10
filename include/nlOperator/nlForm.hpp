@@ -1,6 +1,5 @@
 #pragma once
 #include "mfem.hpp"
-//#include "../../../MFEM_STUFF/mfem-4.7/build/include/mfem/fem/lininteg.hpp"
 #include "../../../MFEM_STUFF/mfem-4.7/build/include/mfem/fem/intrules.hpp"
 #include "../../../MFEM_STUFF/mfem-4.7/build/include/mfem/linalg/dtensor.hpp"
 #include "../templatedMathObjs/dualNumber.hpp"
@@ -50,15 +49,11 @@ private:
   Array<TCoefficientIntegrator<Number>*> EFuncCoeff; //Coefficient Funcs
   std::vector<Array<int>*>               InpBlocks;  //Coefficient Input Vars
 
-  //Total energy functionals
-  std::function<dualSymNum<Number>(tVector<dualSymNum<Number>>)>  tEFunc1;
-  std::function<ddualSymNum<Number>(tVector<ddualSymNum<Number>>)> tEFunc2;
-
   //Reference to block vector of element data
   Array<int> *btoffs_inp, *bvoffs_inp;
   Array<int> *btoffs_out, *bvoffs_out;
   mutable mfem::Vector  *EBlockVector, *EBlockResidual;
-  mutable mfem::DenseMatrix elMat;
+  mutable mfem::DenseMatrix elMats;
 
   //Used for directional derivatives Templated
   //dual number vector for Residual and Jacobian
@@ -111,9 +106,13 @@ nlForm<Number>::nlForm(const mfem::Device & dev, const mfem::MemoryType & mt_, c
                              Operator(n,n), device(dev), mt(mt_), use_dev(usedev_)
 {
   //////////////////////////
-  ///Set sizes
+  ///Recover the object sizes
   //////////////////////////
-  elMat.SetSize(NDofs);
+
+  //////////////////////////
+  ///Allocate the memory objects
+  //////////////////////////
+  elMats.SetSize(NDofs);
   EBlockVector   = new mfem::Vector(n,mt_);
   EBlockResidual = new mfem::Vector(n,mt_);
   tExVec = new tVector<dualSymNum<Number>>(NDofs,mt);
@@ -129,8 +128,6 @@ nlForm<Number>::nlForm(const mfem::Device & dev, const mfem::MemoryType & mt_, c
   //////////////////////////
   ///Check sizes
   //////////////////////////
-  std::cout <<  elMat.Width()          << std::endl;
-  std::cout <<  elMat.Height()         << std::endl;
   std::cout <<  tExVec->size           << std::endl;
   std::cout <<  tEJVec->size           << std::endl;
   std::cout <<  EBlockVector->Size()   << std::endl;
@@ -188,7 +185,7 @@ void nlForm<Number>::Mult(const Vector & x, Vector & y) const
     //Perturb each of the DOF's
     for(int IDofs=0; IDofs<NDofs; IDofs++){
       (*tExVec)[IDofs].grad = 1.0;
-//    ElmRess(IElm,IDofs) += tEFunc1( *tExVec).grad;
+//    ElmRess(IElm,IDofs) += (*tExVec)[IDofs].grad;
       (*tExVec)[IDofs].grad = 0.0;
     }
   });
@@ -223,7 +220,7 @@ void nlForm<Number>::buildJacobian(const Vector & x) const
       //Perturb each of the DOF's in Jth-column
       for(int JDofs=0; JDofs<NDofs; JDofs++){
         (*tEJVec)[JDofs].grad.val = 1.0;
-//        elMat(IDofs, JDofs) += tEFunc2(*tEJVec).grad.grad;
+//        elMats(IDofs, JDofs) += (*tEJVec).grad.grad;
         (*tEJVec)[JDofs].grad.val = 0.0;
       }
       (*tEJVec)[IDofs].val.grad = 0.0;

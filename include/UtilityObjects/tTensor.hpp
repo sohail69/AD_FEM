@@ -1,6 +1,5 @@
 #pragma once
 #include "macros.hpp"
-#include "dualNumber.hpp"
 #include <functional>
 
 

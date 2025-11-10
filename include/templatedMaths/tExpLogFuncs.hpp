@@ -1,5 +1,5 @@
 #pragma once
-#include "../macros.hpp"
+#include "../UtilityObjects/macros.hpp"
 
 // Returns the exponential
 // of a number
