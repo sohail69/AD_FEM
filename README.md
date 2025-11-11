@@ -146,4 +146,3 @@ functional is applied.
 ```math
 \displaylines{ e(u^{ip}) = e(\mathbf{T^{ip}} \mathbf{Q^{ip}_{Iso}} \tilde{u}) }
 ```
-

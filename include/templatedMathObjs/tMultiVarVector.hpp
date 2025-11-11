@@ -1,8 +1,6 @@
 #pragma once
 #include "../UtilityObjects/macros.hpp"
-#include "../../../../MFEM_STUFF/mfem-4.7/build/include/mfem/general/globals.hpp"
-#include "../../../../MFEM_STUFF/mfem-4.7/build/include/mfem/general/mem_manager.hpp"
-#include "../../../../MFEM_STUFF/mfem-4.7/build/include/mfem/general/device.hpp"
+#include "../UtilityObjects/lowLevelMFEM.hpp"
 #include "mfem.hpp"
 
 
@@ -10,9 +8,10 @@
 // tensor-multi-iterator Functor used to
 // access flattened muli-dimensional vars
 //
-struct multiIterator{
+template<unsigned RANK>
+struct PACKSTRUCT multiIterator{
   const unsigned rank;
-//  unsigned Sizes[RANK];
+  unsigned Sizes[RANK];
 
   //Constructor
 //  template<unsigned RANK>
@@ -28,11 +27,10 @@ struct multiIterator{
     for(unsigned J=0; J<rank; J++){
       L=Iter[J];
       #pragma unroll
-//      for(unsigned K=0; K<(rank-J); K++) L = L*Sizes[K];
+      for(unsigned K=0; K<(rank-J); K++) L = L*Sizes[K];
       I=I+L;
     }
-//    return I;
-    return 0;
+    return I;
   };
 };
 
@@ -47,7 +45,7 @@ template<typename Numeric>
 struct tVarVectorMFEM{
   //Variable vector and iterator
   mfem::Memory<int> offsets;
-  mfem::Memory<multiIterator> Iters;
+  mfem::Memory<multiIterator<5>> Iters;
   mfem::Memory<Numeric> varData;
   int size;
 

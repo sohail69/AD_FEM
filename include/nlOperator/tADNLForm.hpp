@@ -1,7 +1,7 @@
 #pragma once
 #include "mfem.hpp"
-#include "../../../MFEM_STUFF/mfem-4.7/build/include/mfem/fem/intrules.hpp"
-#include "../../../MFEM_STUFF/mfem-4.7/build/include/mfem/linalg/dtensor.hpp"
+#include "../UtilityObjects/macros.hpp"
+#include "../UtilityObjects/lowLevelMFEM.hpp"
 #include "../templatedMathObjs/dualNumber.hpp"
 #include "../templatedMathObjs/tVector.hpp"
 #include "../UtilityObjects/utilityFuncs.hpp"
@@ -41,13 +41,12 @@ class tADNLForm : public Operator
 {
 private:
   //Reference to essential boundary conditions
-  std::vector<ParFiniteElementSpace*> parFEs;
-  std::vector<Array<int>*>            ess_bcs_markers;
-  Array<int>                          ess_bcs_tdofs;
+  const std::vector<ParGridFunction*> & Vars;
+  std::vector<Array<int>*>      ess_bcs_markers;
+  Array<int>                    ess_bcs_tdofs;
 
-  //Energy Functional form coefficient
+  //Energy Functional forms coefficient
   Array<TCoefficientIntegrator<Number>*> EFuncCoeff; //Coefficient Funcs
-  std::vector<Array<int>*>               InpBlocks;  //Coefficient Input Vars
 
   //Reference to block vector of element data
   Array<int> *btoffs_inp, *bvoffs_inp;
@@ -61,9 +60,15 @@ private:
   mutable tVector<ddualSymNum<Number>> *tEJVec;
   mutable Operator *Jacobian_f=NULL;
 
+  //Used for Isogeometric interpolator functions
+  //at all integration points for a given integration
+  //rule
+//  Array<IntegrationRule> IntRules;
+
+
   //Problem sizing and restriction operator
-  const int nElms = 20, NDofs=8, NIntegs=1;
-  const int n=nElms*NDofs;
+  const int NIntegs = 1;
+  int nElms=0, NDofsMax=0, nElmDofs=0, NEQs=0;
   mfem::Operator *elem_restrict=NULL;
 
   //Device and memory configs
@@ -73,7 +78,8 @@ private:
 
 public:
   //Constructor
-  tADNLForm(const mfem::Device & device, const mfem::MemoryType & mt_, const bool & use_dev_);
+  tADNLForm(const std::vector<ParGridFunction*> & Vars_, const mfem::Device & dev
+          , const mfem::MemoryType & mt_, const bool & use_dev_);
 
   //Destructor
   ~tADNLForm();
@@ -83,9 +89,8 @@ public:
   /// to give the Residual form
   void AddEnergyFuncCoeff(TCoefficientIntegrator<Number> *EFuncCoeff, std::vector<int> InpBlocks);
 
-  /// Assembles the residual form i.e. sums over all domain/bdr coefficients.
-  /** When @ref UseFastAssembly "UseFastAssembly(true)" has been called and the
-      assembly is compatible with device execution, it will be executed on the device. */
+  /// Assembles the residual form i.e.
+  /// sums over all domain/bdr coefficients.
   virtual void Mult(const Vector & x, Vector & y) const;
 
   //Build the Jacobian Operator
@@ -102,27 +107,40 @@ public:
 !
 \*****************************************/
 template<typename Number>
-tADNLForm<Number>::tADNLForm(const mfem::Device & dev, const mfem::MemoryType & mt_, const bool & usedev_):
-                             Operator(n,n), device(dev), mt(mt_), use_dev(usedev_)
+tADNLForm<Number>::tADNLForm(const std::vector<ParGridFunction*> & Vars_, const mfem::Device & dev
+                           , const mfem::MemoryType & mt_, const bool & use_dev_):
+                             Vars(Vars_), device(dev), mt(mt_), use_dev(use_dev_)
 {
   //////////////////////////
   ///Recover the object sizes
   //////////////////////////
+  nElms = Vars[0]->ParFESpace()->GetMesh()->GetNE();
+  for(int I=0; I<Vars.size(); I++){
+    NEQs  += Vars[I]->ParFESpace()->GetTrueVSize();
+    for(int J=0; J<nElms; J++){
+      DofTransformation doftrans;
+      Array<int> dofs;
+      Vars[I]->ParFESpace()->GetElementDofs(J,dofs,doftrans);
+      NDofsMax = max(dofs.Size(),NDofsMax);
+      nElmDofs += dofs.Size();
+    }
+  }
 
   //////////////////////////
   ///Allocate the memory objects
   //////////////////////////
-  elMats.SetSize(NDofs);
-  EBlockVector   = new mfem::Vector(n,mt_);
-  EBlockResidual = new mfem::Vector(n,mt_);
-  tExVec = new tVector<dualSymNum<Number>>(NDofs,mt);
-  tEJVec = new tVector<ddualSymNum<Number>>(NDofs,mt);
+  elMats.SetSize(NDofsMax);
+  EBlockVector   = new mfem::Vector(nElmDofs,mt_);
+  EBlockResidual = new mfem::Vector(nElmDofs,mt_);
+  tExVec = new tVector<dualSymNum<Number>>(NDofsMax,mt);
+  tEJVec = new tVector<ddualSymNum<Number>>(NDofsMax,mt);
 
   //////////////////////////
   ///Set the functions
   //////////////////////////
 //  tEFunc1;
  // tEFunc2;
+//  EFuncs.push_back()
 
 
   //////////////////////////
@@ -137,13 +155,27 @@ tADNLForm<Number>::tADNLForm(const mfem::Device & dev, const mfem::MemoryType & 
 
 /*****************************************\
 !
-! Destroy the residual form
+! Destroy the Form
 !
 \*****************************************/
 template<typename Number>
 tADNLForm<Number>::~tADNLForm()
 {
   delete tExVec, tEJVec, EBlockVector, EBlockResidual;
+};
+
+
+/*****************************************\
+!
+! Add energy functional coeffs
+!
+\*****************************************/
+template<typename Number>
+void tADNLForm<Number>::AddEnergyFuncCoeff(TCoefficientIntegrator<Number> *EFuncCoeff
+                                         , std::vector<int> InpBlocks)
+{
+
+
 };
 
 
@@ -174,18 +206,20 @@ void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
   if(elem_restrict != NULL) elem_restrict->Mult(x,*EBlockVector);
 
   //Some stuff for devices
-  const auto ElmVecs = Reshape(EBlockVector->Read(), NDofs, nElms);
-  auto ElmRess       = Reshape(EBlockResidual->ReadWrite(), NDofs, nElms);
+  const auto ElmVecs = Reshape(EBlockVector->Read(), NDofsMax, nElms);
+  auto ElmRess       = Reshape(EBlockResidual->ReadWrite(), NDofsMax, nElms);
 
   mfem::forall_switch(use_dev, nElms, [=] MFEM_HOST_DEVICE (int IElm)
   {
     //Copy element vector in
-    for(int IDofs=0; IDofs<NDofs; IDofs++) (*tExVec)[IDofs].val = ElmVecs(IElm, IDofs);
+    for(int IDofs=0; IDofs<NDofsMax; IDofs++) (*tExVec)[IDofs].val = ElmVecs(IElm, IDofs);
 
     //Perturb each of the DOF's
-    for(int IDofs=0; IDofs<NDofs; IDofs++){
+    for(int IDofs=0; IDofs<NDofsMax; IDofs++){
       (*tExVec)[IDofs].grad = 1.0;
-//    ElmRess(IElm,IDofs) += (*tExVec)[IDofs].grad;
+      for(int IInteg=0; IInteg<NIntegs; IInteg++){
+  //    ElmRess(IElm,IDofs) += (*tExVec)[IDofs].grad;
+      }
       (*tExVec)[IDofs].grad = 0.0;
     }
   });
@@ -207,20 +241,22 @@ void tADNLForm<Number>::buildJacobian(const Vector & x) const
 {
   //Get the element data vectors
   if(elem_restrict != NULL) elem_restrict->Mult(x,*EBlockVector);
-  const auto ElmVecs = Reshape(EBlockVector->Read(), NDofs, nElms);
+  const auto ElmVecs = Reshape(EBlockVector->Read(), NDofsMax, nElms);
 
   mfem::forall_switch(use_dev, nElms, [=] MFEM_HOST_DEVICE (int IElm)
   {
     //Copy element vector in
-    for(int IDofs=0; IDofs<NDofs; IDofs++) (*tEJVec)[IDofs].val.val = ElmVecs(IDofs, IElm);
+    for(int IDofs=0; IDofs<NDofsMax; IDofs++) (*tEJVec)[IDofs].val.val = ElmVecs(IDofs, IElm);
 
     //Perturb each of the DOF's in Ith-row
-    for(int IDofs=0; IDofs<NDofs; IDofs++){
+    for(int IDofs=0; IDofs<NDofsMax; IDofs++){
       (*tEJVec)[IDofs].val.grad = 1.0;
       //Perturb each of the DOF's in Jth-column
-      for(int JDofs=0; JDofs<NDofs; JDofs++){
+      for(int JDofs=0; JDofs<NDofsMax; JDofs++){
         (*tEJVec)[JDofs].grad.val = 1.0;
-//        elMats(IDofs, JDofs) += (*tEJVec).grad.grad;
+        for(int IInteg=0; IInteg<NIntegs; IInteg++){
+  //        elMats(IDofs, JDofs) += (*tEJVec).grad.grad;
+        }
         (*tEJVec)[JDofs].grad.val = 0.0;
       }
       (*tEJVec)[IDofs].val.grad = 0.0;

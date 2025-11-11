@@ -1,6 +1,6 @@
 #pragma once
-#include <omp.h>
 #include <array>
+
 
 //The number definitions
 using REAL64 = double;

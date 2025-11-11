@@ -1,24 +1,9 @@
 #pragma once
 #include <functional>
-#include "mfem.hpp"
+#include "../UtilityObjects/macros.hpp"
+#include "../UtilityObjects/lowLevelMFEM.hpp"
 #include "../templatedMathObjs/tMultiVarVector.hpp"
-
-/*****************************************\
-!
-!  Abstract input preprocessor used for
-!  making input vector discrete data to
-!  continuous function sampled data for
-!  usage in the coefficients
-!
-\*****************************************/
-template<typename Number>
-class AbstractInputCleaner
-{
-  public:
-   /// Define a time-independent templated coefficient
-   AbstractInputCleaner(Array<int> blocks){};
-};
-
+#include "mfem.hpp"
 
 /*****************************************\
 !
@@ -31,13 +16,24 @@ class AbstractInputCleaner
 template<typename Number>
 class TCoefficientIntegrator
 {
+  private:
+    //Integration rule ID of the coefficient
+    //integrator. This class only takes in
+    //functions and continuous variables,
+    //it is not responsible for its own
+    //integration
+    unsigned IntegRuleID=0;
+
   public:
    /// Define a time-independent templated coefficient
-   TCoefficientIntegrator(Array<int> used_blocks);
-
-   /// Evaluate the integral of the element
-   Number Eval(Array<int> InputBlocks, tVarVectorMFEM<Number> elm_vars);
+   TCoefficientIntegrator(Array<int> used_blocks, unsigned integID){};
 
    /// Coefficicient destructor
-   ~TCoefficientIntegrator();
+   ~TCoefficientIntegrator(){};
+
+   /// Evaluate the integral of the element
+   unsigned &GetIntegRule(){return IntegRuleID;};
+
+   /// Evaluate the integral of the element
+   Number Eval(Array<int> InputBlocks, tVarVectorMFEM<Number> elm_vars){return 0;};
 };
