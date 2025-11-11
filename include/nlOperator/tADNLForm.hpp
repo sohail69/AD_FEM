@@ -117,13 +117,15 @@ tADNLForm<Number>::tADNLForm(const std::vector<ParGridFunction*> & Vars_, const 
   nElms = Vars[0]->ParFESpace()->GetMesh()->GetNE();
   for(int I=0; I<Vars.size(); I++){
     NEQs  += Vars[I]->ParFESpace()->GetTrueVSize();
+    int NDofVar=0;
     for(int J=0; J<nElms; J++){
       DofTransformation doftrans;
       Array<int> dofs;
       Vars[I]->ParFESpace()->GetElementDofs(J,dofs,doftrans);
-      NDofsMax = max(dofs.Size(),NDofsMax);
+      NDofVar = max(dofs.Size(),NDofVar);
       nElmDofs += dofs.Size();
     }
+    NDofsMax += NDofVar;
   }
 
   //////////////////////////

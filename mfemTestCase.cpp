@@ -41,6 +41,8 @@ int main(){
   ParFiniteElementSpace fespace(&pmesh, &fec);
   std::vector<mfem::ParGridFunction*> gFuncs;
   gFuncs.push_back(new mfem::ParGridFunction(&fespace));
+  gFuncs.push_back(new mfem::ParGridFunction(&fespace));
+
 
   int NEQs=fespace.GetTrueVSize();
   mfem::Vector x(NEQs,mt), y(NEQs,mt); 
