@@ -46,7 +46,9 @@ private:
   Array<int>                    ess_bcs_tdofs;
 
   //Energy Functional forms coefficient
-  Array<TCoefficientIntegrator<Number>*> EFuncCoeff; //Coefficient Funcs
+  std::vector<TCoefficientIntegrator<Number>*>      EFuncCoeff; //Coefficient Funcs
+  std::vector<std::function<dualSymNum<Number>()>>  dEfuncs;    //dual functions
+  std::vector<std::function<ddualSymNum<Number>()>> ddEfuncs;   //dual dual functions
 
   //Reference to block vector of element data
   Array<int> *btoffs_inp, *bvoffs_inp;
@@ -116,7 +118,7 @@ tADNLForm<Number>::tADNLForm(const std::vector<ParGridFunction*> & Vars_, const 
   //////////////////////////
   nElms = Vars[0]->ParFESpace()->GetMesh()->GetNE();
   for(int I=0; I<Vars.size(); I++){
-    NEQs  += Vars[I]->ParFESpace()->GetTrueVSize();
+    NEQs += Vars[I]->ParFESpace()->GetTrueVSize();
     int NDofVar=0;
     for(int J=0; J<nElms; J++){
       DofTransformation doftrans;
@@ -136,14 +138,6 @@ tADNLForm<Number>::tADNLForm(const std::vector<ParGridFunction*> & Vars_, const 
   EBlockResidual = new mfem::Vector(nElmDofs,mt_);
   tExVec = new tVector<dualSymNum<Number>>(NDofsMax,mt);
   tEJVec = new tVector<ddualSymNum<Number>>(NDofsMax,mt);
-
-  //////////////////////////
-  ///Set the functions
-  //////////////////////////
-//  tEFunc1;
- // tEFunc2;
-//  EFuncs.push_back()
-
 
   //////////////////////////
   ///Check sizes

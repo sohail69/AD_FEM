@@ -17,6 +17,5 @@ template<typename Numeric>
 class interpolator{
 
 
-
-
+  void GenerateSparseOperator();
 };
