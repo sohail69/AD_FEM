@@ -46,9 +46,9 @@ private:
   Array<int>                    ess_bcs_tdofs;
 
   //Energy Functional forms coefficient
-  std::vector<TCoefficientIntegrator<Number>*>      EFuncCoeff; //Coefficient Funcs
-  std::vector<std::function<dualSymNum<Number>()>>  dEfuncs;    //dual functions
-  std::vector<std::function<ddualSymNum<Number>()>> ddEfuncs;   //dual dual functions
+  std::vector<TCoefficientIntegrator<Number>*>                                   EFuncCoeff;//Coeffs
+  std::vector<std::function<dualSymNum<Number>(const tVector<dualSymNum<Number>> )>> dEfuncs;//dual-funcs
+  std::vector<std::function<ddualSymNum<Number>(const tVector<ddualSymNum<Number>> )>> ddEfuncs;//ddual-funcs
 
   //Reference to block vector of element data
   Array<int> *btoffs_inp, *bvoffs_inp;
@@ -58,7 +58,7 @@ private:
 
   //Used for directional derivatives Templated
   //dual number vector for Residual and Jacobian
-  mutable tVector<dualSymNum<Number>>  *tExVec;
+  mutable tVector<dualSymNum<Number>>  *tERVec;
   mutable tVector<ddualSymNum<Number>> *tEJVec;
   mutable Operator *Jacobian_f=NULL;
 
@@ -67,9 +67,8 @@ private:
   //rule
 //  Array<IntegrationRule> IntRules;
 
-
   //Problem sizing and restriction operator
-  const int NIntegs = 1;
+  int NIntegsR=0, NIntegsJ=0;
   int nElms=0, NDofsMax=0, nElmDofs=0, NEQs=0;
   mfem::Operator *elem_restrict=NULL;
 
@@ -136,13 +135,13 @@ tADNLForm<Number>::tADNLForm(const std::vector<ParGridFunction*> & Vars_, const 
   elMats.SetSize(NDofsMax);
   EBlockVector   = new mfem::Vector(nElmDofs,mt_);
   EBlockResidual = new mfem::Vector(nElmDofs,mt_);
-  tExVec = new tVector<dualSymNum<Number>>(NDofsMax,mt);
+  tERVec = new tVector<dualSymNum<Number>>(NDofsMax,mt);
   tEJVec = new tVector<ddualSymNum<Number>>(NDofsMax,mt);
 
   //////////////////////////
   ///Check sizes
   //////////////////////////
-  std::cout <<  tExVec->size           << std::endl;
+  std::cout <<  tERVec->size           << std::endl;
   std::cout <<  tEJVec->size           << std::endl;
   std::cout <<  EBlockVector->Size()   << std::endl;
   std::cout <<  EBlockResidual->Size() << std::endl;
@@ -157,7 +156,7 @@ tADNLForm<Number>::tADNLForm(const std::vector<ParGridFunction*> & Vars_, const 
 template<typename Number>
 tADNLForm<Number>::~tADNLForm()
 {
-  delete tExVec, tEJVec, EBlockVector, EBlockResidual;
+  delete tERVec, tEJVec, EBlockVector, EBlockResidual;
 };
 
 
@@ -208,15 +207,16 @@ void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
   mfem::forall_switch(use_dev, nElms, [=] MFEM_HOST_DEVICE (int IElm)
   {
     //Copy element vector in
-    for(int IDofs=0; IDofs<NDofsMax; IDofs++) (*tExVec)[IDofs].val = ElmVecs(IElm, IDofs);
+    for(int IDofs=0; IDofs<NDofsMax; IDofs++) (*tERVec)[IDofs].val = ElmVecs(IElm, IDofs);
 
-    //Perturb each of the DOF's
-    for(int IDofs=0; IDofs<NDofsMax; IDofs++){
-      (*tExVec)[IDofs].grad = 1.0;
-      for(int IInteg=0; IInteg<NIntegs; IInteg++){
-  //    ElmRess(IElm,IDofs) += (*tExVec)[IDofs].grad;
+    //Go over each Energy functional integrator (for multi-integ-rules)
+    for(int IInteg=0; IInteg<NIntegsR; IInteg++){
+      //Perturb each of the DOF's
+      for(int IDofs=0; IDofs<NDofsMax; IDofs++){
+        (*tERVec)[IDofs].grad = 1.0;
+        ElmRess(IElm,IDofs) += dEfuncs[IInteg](*tERVec).grad;
+        (*tERVec)[IDofs].grad = 0.0;
       }
-      (*tExVec)[IDofs].grad = 0.0;
     }
   });
 
@@ -224,7 +224,6 @@ void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
   if(elem_restrict        != NULL) elem_restrict->MultTranspose(*EBlockResidual,y);
   if(ess_bcs_tdofs.Size() != 0)    y.SetSubVector(ess_bcs_tdofs,0.00);
 };
-
 
 /*****************************************\
 !
@@ -244,18 +243,19 @@ void tADNLForm<Number>::buildJacobian(const Vector & x) const
     //Copy element vector in
     for(int IDofs=0; IDofs<NDofsMax; IDofs++) (*tEJVec)[IDofs].val.val = ElmVecs(IDofs, IElm);
 
-    //Perturb each of the DOF's in Ith-row
-    for(int IDofs=0; IDofs<NDofsMax; IDofs++){
-      (*tEJVec)[IDofs].val.grad = 1.0;
-      //Perturb each of the DOF's in Jth-column
-      for(int JDofs=0; JDofs<NDofsMax; JDofs++){
-        (*tEJVec)[JDofs].grad.val = 1.0;
-        for(int IInteg=0; IInteg<NIntegs; IInteg++){
-  //        elMats(IDofs, JDofs) += (*tEJVec).grad.grad;
+    //Go over each Energy functional integrator (for multi-integ-rules)
+    for(int IInteg=0; IInteg<NIntegsJ; IInteg++){
+      //Perturb each of the DOF's in Ith-row
+      for(int IDofs=0; IDofs<NDofsMax; IDofs++){
+        (*tEJVec)[IDofs].val.grad = 1.0;
+        //Perturb each of the DOF's in Jth-column
+        for(int JDofs=0; JDofs<NDofsMax; JDofs++){
+          (*tEJVec)[JDofs].grad.val = 1.0;
+          elMats(IDofs, JDofs) += ddEfuncs[IInteg](*tEJVec).grad.grad;
+          (*tEJVec)[JDofs].grad.val = 0.0;
         }
-        (*tEJVec)[JDofs].grad.val = 0.0;
+        (*tEJVec)[IDofs].val.grad = 0.0;
       }
-      (*tEJVec)[IDofs].val.grad = 0.0;
     }
   });
 };
