@@ -40,7 +40,6 @@ struct PACKSTRUCT multiIterator{
 // using MFEMs memory layout
 // with multiple iterator functors
 //
-
 template<typename Numeric>
 struct tVarVectorMFEM{
   //Variable vector and iterator

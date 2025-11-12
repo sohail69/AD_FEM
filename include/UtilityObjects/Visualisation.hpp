@@ -1,5 +1,4 @@
-#ifndef VISUALISATION_HPP
-#define VISUALISATION_HPP 
+#pragma once
 
 #include "mfem.hpp"
 #include <fstream>
@@ -26,9 +25,9 @@ void ParaViewVisualise(std::string ProbName
 
 #ifdef MFEM_USE_ADIOS2
 void AdiosVisualise(std::vector<ParGridFunction*> Fields
-                  , std::vector<std::string>      FieldNames
-				  , const char *mesh_file, int order
-				  , ParMesh *pmesh, double time){
+                  , std::vector<std::string> FieldNames
+                  , const char *mesh_file, int order
+                  , ParMesh *pmesh, double time){
   std::string postfix(mesh_file);
   postfix.erase(0, std::string("../data/").size() );
   postfix += "_o" + std::to_string(order);
@@ -41,6 +40,4 @@ void AdiosVisualise(std::vector<ParGridFunction*> Fields
   for(int I=0; I< FieldNames.size(); I++) adios2_dc.RegisterField(FieldNames[I],Fields[I]);
   adios2_dc.Save();
 };
-#endif
-
 #endif

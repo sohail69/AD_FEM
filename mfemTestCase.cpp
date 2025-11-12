@@ -5,6 +5,7 @@
 #include <cmath>
 #include "mfem.hpp"
 #include "include/nlOperator/tADNLForm.hpp"
+#include "include/UtilityObjects/Visualisation.hpp"
 
 // Mathematical objects
 #include "include/templatedMathObjs/dualNumber.hpp"
@@ -21,7 +22,7 @@ int main(){
   //    and Parse command-line options
   Mpi::Init();
   const int myid = Mpi::WorldRank();
-  int ref_levels = -1, order = 2;
+  int ref_levels=-1, order=2;
   const char *mesh_file = "data/star.mesh";
   const char *device_config = "cpu";
   bool use_dev=false;
@@ -40,22 +41,24 @@ int main(){
   H1_FECollection fec(order, dim);
   ParFiniteElementSpace fespace(&pmesh, &fec);
   std::vector<mfem::ParGridFunction*> gFuncs;
-  gFuncs.push_back(new mfem::ParGridFunction(&fespace));
-  gFuncs.push_back(new mfem::ParGridFunction(&fespace));
+  std::vector<std::string>            FieldNames;
+  gFuncs.push_back(new mfem::ParGridFunction(&fespace)); FieldNames.push_back("field_1");
+  gFuncs.push_back(new mfem::ParGridFunction(&fespace)); FieldNames.push_back("field_2");
 
-
-  int NEQs=fespace.GetTrueVSize();
+  int NEQs=0;
+  for(int I=0; I<gFuncs.size(); I++) NEQs += gFuncs[I]->ParFESpace()->GetTrueVSize();
   mfem::Vector x(NEQs,mt), y(NEQs,mt); 
 
-  //
   //Test case for the non-linear
   //form (make sure it compiles 
   //and runs)
-  //
   tADNLForm<mfem::real_t> nlProb(gFuncs, device, mt, use_dev);
   nlProb.buildJacobian(x);
   nlProb.Mult(x,y);
 
+  // 5. Output the vector data
+  //    into paraview 
+  ParaViewVisualise("testNLProblem",gFuncs,FieldNames,order,&pmesh,0.00);
 
   // Delete the objects
   // an clean-up
