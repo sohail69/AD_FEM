@@ -13,7 +13,7 @@ This library is dependant on the [MFEM project](https://mfem.org/). Thus all tha
 [documentation page](https://mfem.org/building/). The original application was tested on [Rocky Linux](https://rockylinux.org/)
 using the following libraries:
 - [GCC Version 11.5.0](https://gcc.gnu.org/)
-- [MPICH Version ](https://www.mpich.org/downloads/)
+- [MPICH Version 4.2.1](https://www.mpich.org/downloads/)
 - [MFEM Version 4.7 ](https://mfem.org/)
 - [Hypre Version 2.32.0](https://github.com/hypre-space/hypre)
 - [METIS Version 5.1.0](https://github.com/KarypisLab/METIS)
