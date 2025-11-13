@@ -89,6 +89,7 @@ public:
   /// list of them, these are differentiated
   /// to give the Residual form
   void AddEnergyFuncCoeff(TCoefficientIntegrator<Number> *EFuncCoeff, std::vector<int> InpBlocks);
+  void PrepareIntegrators();
 
   /// Assembles the residual form i.e.
   /// sums over all domain/bdr coefficients.
@@ -165,10 +166,18 @@ tADNLForm<Number>::~tADNLForm()
 ! Add energy functional coeffs
 !
 \*****************************************/
+//Add a coefficient to the list
 template<typename Number>
 void tADNLForm<Number>::AddEnergyFuncCoeff(TCoefficientIntegrator<Number> *EFuncCoeff
                                          , std::vector<int> InpBlocks)
 {
+
+
+};
+
+//Finalize the Integrator functions before assembly
+template<typename Number>
+void tADNLForm<Number>::PrepareIntegrators(){
 
 
 };

@@ -1,8 +1,19 @@
 # AD FEM Overview
-An attempt at making a fully functional AD framework in MFEM, for problems which
-can be described as constrained minimals of energy functionals. The general problem
-setup is as follows, suppose you want to minimise an energy function subject to
-constraints(A):
+An attempt at making a fully functional Automatic Differentiation (AD) application in MFEM,
+for problems which can be described as constrained minimals of energy functionals. This
+application uses C++17 features, operator overloading and Duals numbers to do forward AD
+at the element level and leverages the MFEM library (and sub-dependencies) to do the majority 
+finite element related work i.e. meshes, basis functions, element-topology, solving and
+post-processing.
+
+###Dependencies
+This library is dependant on the [MFEM project](https://mfem.org/). Thus all that is needed is a functioning
+ installation of MFEM to use this application the install instructions for MFEM on the MFEM
+[documentation page](https://mfem.org/building/).
+
+###The general problem
+setup is as follows, suppose you want to minimise an energy functional subject to
+constraints matrix (A):
 
 ```math
 \displaylines{Min[e(u_1, u_2,...,u_n)] \\
@@ -25,6 +36,7 @@ regards to the DOF's of interest must be zero, this is the residual form:
 ```math
 \displaylines{R_m(u) = \frac{\partial e(u)}{\partial u_m} = 0}
 ```
+
 
 # Picard-Iteration and Newtons Method
 To find a solution (u) such that the possibly (generally) non-linear residual form is zero
