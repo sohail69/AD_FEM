@@ -6,12 +6,13 @@ at the element level and leverages the MFEM library (and sub-dependencies) to do
 finite element related work i.e. meshes, basis functions, element-topology, solving and
 post-processing.
 
-##Dependencies
+### Dependencies
+
 This library is dependant on the [MFEM project](https://mfem.org/). Thus all that is needed is a functioning
  installation of MFEM to use this application the install instructions for MFEM on the MFEM
 [documentation page](https://mfem.org/building/).
 
-##The general problem
+### The general problem
 setup is as follows, suppose you want to minimise an energy functional subject to
 constraints matrix (A):
 
