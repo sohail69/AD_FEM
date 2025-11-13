@@ -14,7 +14,7 @@
 !
 \*****************************************/
 template<typename Numeric>
-class interpolator{
+class tInterpolator{
 
 
   void GenerateSparseOperator();

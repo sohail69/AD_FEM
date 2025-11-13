@@ -1,7 +1,7 @@
 # AD FEM Overview
 An attempt at making a fully functional Automatic Differentiation (AD) application in MFEM,
 for problems which can be described as constrained minimals of energy functionals. This
-application uses C++17 features, operator overloading and Duals numbers to do forward AD
+application uses C++17 features, operator overloading and dual-numbers to do forward AD
 at the element level and leverages the MFEM library (and sub-dependencies) to do the majority 
 finite element related work i.e. meshes, basis functions, element-topology, solving and
 post-processing.
