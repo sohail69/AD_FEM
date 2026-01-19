@@ -213,13 +213,27 @@ void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
   const auto ElmVecs = Reshape(EBlockVector->Read(), NDofsMax, nElms);
   auto ElmRess       = Reshape(EBlockResidual->ReadWrite(), NDofsMax, nElms);
 
-  mfem::forall_switch(use_dev, nElms, [=] MFEM_HOST_DEVICE (int IElm)
+  unsigned sum_NIpsNDofs=0;
+  for(int IIntegs=0; IIntegs<; ) sum_NIpsNDofs
+  DenseMatrix InterpOp;
+  tVector<dReal> g_Xp;
+
+  //Partially assemble the sampled
+  //variables used for calculating
+  //the residuals
+  mfem::forall_switch(use_dev, nElms*sum_NIpsNDofs, [=] MFEM_HOST_DEVICE (int Ik)
   {
-    //Copy element vector in
-    for(int IDofs=0; IDofs<NDofsMax; IDofs++) (*tERVec)[IDofs].val = ElmVecs(IElm, IDofs);
-
-
+    InvIterator
+nElms*sum_NIpsNDofs
+    for(unsigned JDof=0; JDof<NDofMax; JDof++){
+      g_Xp(Ik) = InterpOp(Ik,JDof)*ElmVecs(,JDof);
+    }
   });
+
+
+  //Copy element vector in
+  for(int IDofs=0; IDofs<NDofsMax; IDofs++) (*tERVec)[IDofs].val = ElmVecs(IElm, IDofs);
+
 
   //Get the residual vector and apply the essential BC's
   if(elem_restrict        != NULL) elem_restrict->MultTranspose(*EBlockResidual,y);
@@ -228,29 +242,9 @@ void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
 
 /*****************************************\
 !
-!    Assemble and build the Jacobian
-!               Operator
+!     Assemble the Jacobian matrix
 !
 \*****************************************/
-template<typename Number>
-void tADNLForm<Number>::buildJacobian(const Vector & x) const
-{
-  //Get the element data vectors
-  if(elem_restrict != NULL) elem_restrict->Mult(x,*EBlockVector);
-  const auto ElmVecs = Reshape(EBlockVector->Read(), NDofsMax, nElms);
+void buildJacobian(const Vector & x){};
 
-  mfem::forall_switch(use_dev, nElms*NIps*NDofs, [=] MFEM_HOST_DEVICE (int Ik)
-  {
-    //Copy element vector in
-    for(int IDofs=0; IDofs<NDofsMax; IDofs++) (*tEJVec)[IDofs].val.val = ElmVecs(IDofs, IElm);
-
-    //Go over each Energy functional integrator (for multi-integ-rules)
-    for(int IInteg=0; IInteg<NIntegsJ; IInteg++){
-      int NIps=0; //Get number of integration points from integrator
-
-      //Get the Interpolator Matrix/functor
-      //at all DOF's
-
-    }
-  });
 };
