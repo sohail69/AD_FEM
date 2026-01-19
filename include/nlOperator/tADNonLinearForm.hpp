@@ -218,29 +218,7 @@ void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
     //Copy element vector in
     for(int IDofs=0; IDofs<NDofsMax; IDofs++) (*tERVec)[IDofs].val = ElmVecs(IElm, IDofs);
 
-    //Go over each Energy functional integrator (for multi-integ-rules)
-    for(int IInteg=0; IInteg<NIntegsR; IInteg++){
-      int NIps=0; //Get number of integration points from integrator
 
-      //Apply the Interpolator sparse matrix functor
-      //to all dofs at all integration points
-
-
-      //Perturb each of the DOF's
-      for(int IDofs=0; IDofs<NDofsMax; IDofs++){
-        (*tERVec)[IDofs].grad = 1.0;
-        //Apply the Interpolator Matrix/functor
-        //at all DOF's at all Integration points
-        //at the current perturbation
-
-
-        //Over all integration points
-        for(int Ip=0; Ip<NIps; Ip++){
-          ElmRess(IElm,IDofs) += dEfuncs[IInteg](*tERVec).grad;
-        }
-        (*tERVec)[IDofs].grad = 0.0;
-      }
-    }
   });
 
   //Get the residual vector and apply the essential BC's
@@ -261,7 +239,7 @@ void tADNLForm<Number>::buildJacobian(const Vector & x) const
   if(elem_restrict != NULL) elem_restrict->Mult(x,*EBlockVector);
   const auto ElmVecs = Reshape(EBlockVector->Read(), NDofsMax, nElms);
 
-  mfem::forall_switch(use_dev, nElms, [=] MFEM_HOST_DEVICE (int IElm)
+  mfem::forall_switch(use_dev, nElms*NIps*NDofs, [=] MFEM_HOST_DEVICE (int Ik)
   {
     //Copy element vector in
     for(int IDofs=0; IDofs<NDofsMax; IDofs++) (*tEJVec)[IDofs].val.val = ElmVecs(IDofs, IElm);
@@ -273,26 +251,6 @@ void tADNLForm<Number>::buildJacobian(const Vector & x) const
       //Get the Interpolator Matrix/functor
       //at all DOF's
 
-
-      //Perturb each of the DOF's in Ith-row
-      for(int IDofs=0; IDofs<NDofsMax; IDofs++){
-        (*tEJVec)[IDofs].val.grad = 1.0;
-        //Perturb each of the DOF's in Jth-column
-        for(int JDofs=0; JDofs<NDofsMax; JDofs++){
-          (*tEJVec)[JDofs].grad.val = 1.0;
-          //Apply the Interpolator Matrix/functor
-          //at all DOF's at all Integration points
-          //at the current perturbation
-
-
-          //Over all integration points
-          for(int Ip=0; Ip<NIps; Ip++){
-            elMats(IDofs, JDofs) += ddEfuncs[IInteg](*tEJVec).grad.grad;
-          }
-          (*tEJVec)[JDofs].grad.val = 0.0;
-        }
-        (*tEJVec)[IDofs].val.grad = 0.0;
-      }
     }
   });
 };

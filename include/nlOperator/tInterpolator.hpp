@@ -4,7 +4,6 @@
 #include "mfem.hpp"
 
 
-
 /*****************************************\
 !
 !  This generates a single interpolator
