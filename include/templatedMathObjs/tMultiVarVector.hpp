@@ -4,7 +4,6 @@
 #include "mfem.hpp"
 
 
-//
 // tensor-multi-iterator Functor used to
 // access flattened muli-dimensional vars
 //
@@ -27,24 +26,21 @@ struct PACKSTRUCT multiIterator{
   };
 };
 
-template<unsigned RANK>
-struct PACKSTRUCT DevMultiIterator{
-  unsigned Sizes[RANK];
-
-  //Accessor multi-iter flattening
-  FORCE_INLINE unsigned operator()(const unsigned Iter[]){
-    unsigned L, I=0;
-    #pragma unroll
-    for(unsigned J=0; J<RANK; J++){
-      L=Iter[J];
-      #pragma unroll
-      for(unsigned K=0; K<(RANK-J); K++) L = L*Sizes[K];
-      I=I+L;
-    }
-    return I;
-  };
+template<unsigned nVars, unsigned MaxRank>
+struct PACKSTRUCT MultiIteratorData{
+  unsigned Ranks[nVars], Sizes[nVars*MaxRank], Offsets[nVars];
 };
 
+template<unsigned nVars, unsigned MaxRank>
+unsigned MultiIteratorFWD(const MultiIteratorData<nVars,MaxRank> & MID, const unsigned Iters[MaxRank]){
+  return 0;
+};
+
+
+template<unsigned nVars, unsigned MaxRank>
+void MultiIteratorINV(const MultiIteratorData<nVars,MaxRank> & MID, unsigned Iters[MaxRank]){
+
+};
 
 //
 // templated vector of numbers 

@@ -216,18 +216,23 @@ void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
   unsigned sum_NIpsNDofs=0;
   for(int IIntegs=0; IIntegs<; ) sum_NIpsNDofs
   DenseMatrix InterpOp;
-  tVector<dReal> g_Xp;
+  tVector<dualSymNum<Number>> g_Xp, fg_Xp;
 
   //Partially assemble the sampled
   //variables used for calculating
   //the residuals
-  mfem::forall_switch(use_dev, nElms*sum_NIpsNDofs, [=] MFEM_HOST_DEVICE (int Ik)
+  mfem::forall_switch(use_dev, nElms*sum_NIpsNVars, [=] MFEM_HOST_DEVICE (int Ik)
   {
-    InvIterator
-nElms*sum_NIpsNDofs
+    unsigned IElm, IDof, Ip;
+    InvIterator(Ik, IElm, IDof, Ip);
+    CopyInData();
+
+
     for(unsigned JDof=0; JDof<NDofMax; JDof++){
-      g_Xp(Ik) = InterpOp(Ik,JDof)*ElmVecs(,JDof);
+      g_Xp(Ik) = InterpOp(Ik,JDof)*ElmVecs(IElm,JDof);
     }
+
+    fg_Xp(Ik) = func(g_Xp(Ik));
   });
 
 
