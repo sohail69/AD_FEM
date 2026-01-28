@@ -12,9 +12,16 @@
 !  discrete data to sampled continuous data
 !
 \*****************************************/
-template<typename Numeric>
-class tInterpolator{
+class tInterpolator : public mfem::DenseMatrix
+{
+  private:
+    const mfem::Array<mfem::ParFiniteElementSpace*> & FEs;
+    mfem::DenseMatrix IOp;
 
+  public:
+    //Constructor
+    tInterpolator();
 
-  void GenerateSparseOperator();
+    //Get the interpolation matrix
+    mfem::DenseMatrix & GetMat(){return IOp};
 };

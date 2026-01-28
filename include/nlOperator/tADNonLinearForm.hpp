@@ -8,6 +8,12 @@
 #include "TCoeffInteg.hpp"
 #include <vector>
 
+
+//Linear algebra
+//operators
+#include "tInterpolator.hpp"
+#include "tRestrictOperator.hpp"
+
 using namespace mfem;
 template<typename Num> using dualSymNum = dualNumber<Num,Num>;
 template<typename Num> using ddualSymNum = dualNumber<dualNumber<Num,Num>,dualNumber<Num,Num>>;
@@ -71,6 +77,8 @@ private:
   int NIntegsR=0, NIntegsJ=0;
   int nElms=0, NDofsMax=0, nElmDofs=0, NEQs=0;
   mfem::Operator *elem_restrict=NULL;
+  tInterpolator IOp;
+
 
   //Device and memory configs
   const bool             & use_dev;
@@ -207,15 +215,15 @@ template<typename Number>
 void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
 {
   //Get the element data vectors
+  //with a restrict operator
   if(elem_restrict != NULL) elem_restrict->Mult(x,*EBlockVector);
 
   //Some stuff for devices
   const auto ElmVecs = Reshape(EBlockVector->Read(), NDofsMax, nElms);
-  auto ElmRess       = Reshape(EBlockResidual->ReadWrite(), NDofsMax, nElms);
+  auto ElmRes = Reshape(EBlockResidual->ReadWrite(), NDofsMax, nElms);
 
   unsigned sum_NIpsNDofs=0;
   for(int IIntegs=0; IIntegs<; ) sum_NIpsNDofs
-  DenseMatrix InterpOp;
   tVector<dualSymNum<Number>> g_Xp, fg_Xp;
 
   //Partially assemble the sampled
@@ -223,21 +231,20 @@ void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
   //the residuals
   mfem::forall_switch(use_dev, nElms*sum_NIpsNVars, [=] MFEM_HOST_DEVICE (int Ik)
   {
+    //The recover the sub iterators
     unsigned IElm, IDof, Ip;
     InvIterator(Ik, IElm, IDof, Ip);
-    CopyInData();
 
-
+    //Interpolate the DOF's to
+    //get the vars at the sample points 
+    dualSymNum<Number> zero(0.00), dx(0.00,1.00);
     for(unsigned JDof=0; JDof<NDofMax; JDof++){
-      g_Xp(Ik) = InterpOp(Ik,JDof)*ElmVecs(IElm,JDof);
+      g_Xp(Ik) = IOp.GetMat()(Ik,JDof)*(ElmVecs(IElm,JDof) + ((JDof==IDof)?zero:dx) + ((JDof==0)?zero:g_Xp(Ik));
     }
 
-    fg_Xp(Ik) = func(g_Xp(Ik));
+    fg_Xp(Ik) = func(g_Xp, Ik, IElm, IDof, Ip);
   });
 
-
-  //Copy element vector in
-  for(int IDofs=0; IDofs<NDofsMax; IDofs++) (*tERVec)[IDofs].val = ElmVecs(IElm, IDofs);
 
 
   //Get the residual vector and apply the essential BC's
