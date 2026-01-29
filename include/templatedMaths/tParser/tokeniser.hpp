@@ -17,6 +17,13 @@
 struct Token{
   std::string type;
   std::string value;
+  unsigned size;
+};
+
+struct VarToken{
+  std::string type;
+  std::string value;
+  unsigned TRank;
 };
 
 /*****************************************\
@@ -35,6 +42,38 @@ void lex(std::string & InputStr, std::vector<Token> & tokens){
     nTk.value = parseVal;
     tokens.push_back(nTk);
   };
-  std::cout << std::endl;
+};
+
+
+
+/*****************************************\
+!
+!  A lexiographer that checks the type of
+!  a value string containing a Var
+!
+\*****************************************/
+void lexVarType(std::vector<Token> & VarTokens, std::vector<Token> & VarSizeTokens){
+  for(unsigned I=0; I<VarTokens.size(); I++){
+    unsigned Tensorflag=0, TRank=0;
+    if(VarTokens[I].value.find("[") != std::string::npos) Tensorflag+=1;
+    if(VarTokens[I].value.find("]") != std::string::npos) Tensorflag+=1;
+    VarTokens[I].type = (Tensorflag==0) ? "scalar":((Tensorflag==2)?"tensor":"MALFTensor");
+    if(Tensorflag!=0){
+      TRank +=1;
+      for(unsigned J=0; VarTokens[I].value[J] != 0; J++){
+        if(VarTokens[I].value[J] == ',') TRank +=1;
+      }
+      for(unsigned J=0; J<VarSizeTokens.size(); J++){
+        size_t Pos=VarTokens[I].value.find(VarSizeTokens[J].value);
+        if(Pos != std::string::npos)
+          std::cout << std::setw(15) << Pos;
+      }
+      std::cout << std::endl;
+    }
+    VarTokens[I].size = TRank;
+    std::cout << std::setw(15) << VarTokens[I].type
+              << std::setw(15) << VarTokens[I].size
+              << std::setw(15) << VarTokens[I].value << std::endl;
+  }
 };
 

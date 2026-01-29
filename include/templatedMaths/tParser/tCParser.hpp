@@ -33,12 +33,11 @@ std::function<Number(std::vector<Number> data)> tensorParse(std::string &Iters
 {
   std::vector<Token> IterTKNs, varSizeTKNs, varTKNs;
   lex(Iters, IterTKNs);
-  lex(varSizes, varSizeTKNs);
-  lex(Vars, varTKNs);
 
-  std::cout << IterTKNs.size()    << std::endl;
-  std::cout << varSizeTKNs.size() << std::endl;
-  std::cout << varTKNs.size()     << std::endl;
+  lex(varSizes, varSizeTKNs);
+
+  lex(Vars, varTKNs);
+  lexVarType(varTKNs, varSizeTKNs);
 
   auto lmbda2 = [=](std::vector<Number> data){
     Number a(0.00);
