@@ -1,7 +1,6 @@
 #pragma once
 #include "../UtilityObjects/macros.hpp"
 #include "tPowFuncs.hpp"
-#include <cmath>
 
 // Returns the Sine function
 // of a number using a 15th order

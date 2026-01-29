@@ -235,14 +235,18 @@ void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
     unsigned IElm, IDof, Ip;
     InvIterator(Ik, IElm, IDof, Ip);
 
-    //Interpolate the DOF's to
-    //get the vars at the sample points 
+    //Interpolate the DOF's to get
+    //the vars at the sample points
     dualSymNum<Number> zero(0.00), dx(0.00,1.00);
     for(unsigned JDof=0; JDof<NDofMax; JDof++){
-      g_Xp(Ik) = IOp.GetMat()(Ik,JDof)*(ElmVecs(IElm,JDof) + ((JDof==IDof)?zero:dx) + ((JDof==0)?zero:g_Xp(Ik));
+      g_Xp(Ik) = IOp.GetMat()(Ik,JDof)*(ElmVecs(IElm,JDof) + ((JDof==0)?zero:g_Xp(Ik));
     }
 
-    fg_Xp(Ik) = func(g_Xp, Ik, IElm, IDof, Ip);
+//Useful for compact AD functions
+//+ ((JDof==IDof)?zero:dx)
+
+    //Calculate the resdual function
+    fg_Xp(Ik) = func(g_Xp, Ik);
   });
 
 
