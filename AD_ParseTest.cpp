@@ -28,7 +28,12 @@ int main(){
   std::vector<Token> tokenizedData;
   std::map<unsigned,std::function<double(double)>> funcMap;
   auto lmbdaFunc = tensorParse<double>(Iters, varSizes, Vars, expr);
-
-  std::cout << lmbdaFunc(inpData) << std::endl;
   return 0;
 };
+
+/*
+//  std::cout << lmbdaFunc(inpData) << std::endl;
+    std::cout << std::setw(15) << VarTokens[I].type
+              << std::setw(15) << VarTokens[I].size
+              << std::setw(15) << VarTokens[I].value << std::endl;
+*/

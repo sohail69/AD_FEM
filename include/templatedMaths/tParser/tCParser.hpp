@@ -6,7 +6,6 @@
 //#include "tCmath.hpp"
 #include "tokeniser.hpp"
 
-
 /*****************************************\
 !
 !  This is the parsing tree basic Node

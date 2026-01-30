@@ -20,10 +20,13 @@ struct Token{
   unsigned size;
 };
 
-struct VarToken{
-  std::string type;
-  std::string value;
-  unsigned TRank;
+
+struct Vars{
+  // TRanks   : Tensor rank of Variables
+  // sizes    : Sizes of the tensor ranks (contiguous vector)
+  // Soffsets : Offsets for the size vector of a Vars Tensor dimensions
+  // Voffsets : Offsets for the Vars starting points
+  std::vector<unsigned> TRanks, sizes, Soffsets, Voffsets;
 };
 
 /*****************************************\
@@ -45,7 +48,6 @@ void lex(std::string & InputStr, std::vector<Token> & tokens){
 };
 
 
-
 /*****************************************\
 !
 !  A lexiographer that checks the type of
@@ -65,15 +67,9 @@ void lexVarType(std::vector<Token> & VarTokens, std::vector<Token> & VarSizeToke
       }
       for(unsigned J=0; J<VarSizeTokens.size(); J++){
         size_t Pos=VarTokens[I].value.find(VarSizeTokens[J].value);
-        if(Pos != std::string::npos)
-          std::cout << std::setw(15) << Pos;
+//        if(Pos != std::string::npos) std::cout << std::setw(15) << Pos;
       }
-      std::cout << std::endl;
     }
     VarTokens[I].size = TRank;
-    std::cout << std::setw(15) << VarTokens[I].type
-              << std::setw(15) << VarTokens[I].size
-              << std::setw(15) << VarTokens[I].value << std::endl;
   }
 };
-
