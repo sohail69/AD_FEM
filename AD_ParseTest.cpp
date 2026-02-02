@@ -19,7 +19,7 @@
 // mpic++ -m64 -std=c++17 -O2 -o main AD_ParseTest.cpp
 int main(){
   std::string Iters    = "I J";
-  std::string varSizes = "Dim1 Dim2";
+  std::string varSizes = "Dim1=3 Dim2=2";
   std::string Vars     = "a U[Dim2] V[Dim1] D[Dim1,Dim2]";
   std::string expr     = " a + D[J,I]*U[I]*V[J]";
 

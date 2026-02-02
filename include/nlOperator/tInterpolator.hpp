@@ -15,7 +15,7 @@
 class tInterpolator : public mfem::DenseMatrix
 {
   private:
-    const mfem::Array<mfem::ParFiniteElementSpace*> & FEs;
+    const mfem::Array<mfem::ParGridFunctions*> & ParGFS;
     mfem::DenseMatrix IOp;
 
   public:
