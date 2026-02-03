@@ -1,5 +1,5 @@
 # RYUJINJAKKU
-**"All**things**in**the**universe**burn**to**ashes!"**
+**"All things in the universe burn to ashes!"**
 An attempt at making a fully functional Automatic Differentiation (AD) application in MFEM,
 for problems which can be described as constrained minimals of energy functionals. This
 application uses C++17 features, operator overloading and dual-numbers to do forward AD
