@@ -9,13 +9,18 @@
 /*****************************************\
 !
 !  This is the parsing tree basic Node
+!  NodeType=="Operator"
+!  NodeType=="Function"
+!  NodeType=="Var"
 !
 \*****************************************/
 struct BTreeNode{
   std::string Data;
+  std::string NodeType;
   BTreeNode* LNode=NULL;
   BTreeNode* RNode=NULL;
 };
+
 
 /*****************************************\
 !

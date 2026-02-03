@@ -13,9 +13,8 @@
 !
 \*****************************************/
 template<typename REAL, typename UINT>
-void GenTCMathFuncMap(std::map<std::string, std::function<REAL(const REAL)> SingleInputFuncs)
+void GenTCMathFuncMap(std::map<std::string, std::function<REAL(const REAL)> & SingleInputFuncs)
 {
-
   //templated TrigFuncs
   SingleInputFuncs["cos"]   = cos<REAL>;   //Cosine function (Radians)
   SingleInputFuncs["sin"]   = sin<REAL>;   //Sine function (Radians)
@@ -30,8 +29,8 @@ void GenTCMathFuncMap(std::map<std::string, std::function<REAL(const REAL)> Sing
   SingleInputFuncs["sinh"]  = sinh<REAL>;  //Hyperbolic sine function
   SingleInputFuncs["tanh"]  = tanh<REAL>;  //Hyperbolic tangent function
   SingleInputFuncs["acosh"] = acosh<REAL>; //Hyperbolic arc-cosine function
-  SingleInputFuncs["asinh"] = asinh<REAL>;  //Hyperbolic arc-sine function
-  SingleInputFuncs["atanh"] = atanh<REAL>;  //Hyperbolic arc-tangent function
+  SingleInputFuncs["asinh"] = asinh<REAL>; //Hyperbolic arc-sine function
+  SingleInputFuncs["atanh"] = atanh<REAL>; //Hyperbolic arc-tangent function
 
   //templated ExpLogFuncs
   SingleInputFuncs["exp"]   = exp<REAL>;   //Natural exponential

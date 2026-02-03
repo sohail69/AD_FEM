@@ -15,6 +15,46 @@ struct PACKSTRUCT dualNumber{
   FORCE_INLINE dualNumber(value_t r=0.0, gradient_t eps=0.0): val(r), grad(eps){};
 };
 
+
+/***************************************\
+!
+!  Dual-Dual number
+!  Equivalence/augmentation operations
+!
+\***************************************/
+//Increment operator
+template<typename v_t, typename g_t>
+FORCE_INLINE constexpr void operator+=(dualNumber<v_t,g_t> & a, const dualNumber<v_t,g_t> & b) 
+{
+  a.val = a.val + b.val;
+  a.grad = a.grad + b.grad;
+};
+
+//Decrement operator
+template<typename v_t, typename g_t>
+FORCE_INLINE constexpr void operator-=(dualNumber<v_t,g_t> & a, const dualNumber<v_t,g_t> & b) 
+{
+  a.val = a.val - b.val;
+  a.grad = a.grad - b.grad;
+};
+
+//Multiplication equals operator
+template<typename v_t, typename g_t>
+FORCE_INLINE constexpr void operator*=(dualNumber<v_t,g_t> & a, const dualNumber<v_t,g_t> & b) 
+{
+  a.val = a.val*b.val;
+  a.grad = a.grad - b.grad;
+};
+
+//Divide equals
+template<typename v_t, typename g_t>
+FORCE_INLINE constexpr void operator/=(dualNumber<v_t,g_t> & a, const dualNumber<v_t,g_t> & b) 
+{
+  dualNumber<v_t,g_t> newVal;
+  newVal.val  = a.val*b.val;
+  newVal.grad = a.val*b.grad + a.grad*b.val;
+};
+
 /***************************************\
 !
 !  Dual-Dual number operations
