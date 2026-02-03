@@ -1,4 +1,4 @@
-# RYUJINJAKKU
+# RYUJIN-JAKKA
 
 ### **"All things in the universe burn to ashes!"**
 

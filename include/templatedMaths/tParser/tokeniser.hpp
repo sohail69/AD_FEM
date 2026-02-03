@@ -21,13 +21,16 @@ struct Token{
 };
 
 
+template<typename REAL, typename UINT>
 struct Vars{
   // TRanks   : Tensor rank of Variables
   // sizes    : Sizes of the tensor ranks (contiguous vector)
   // Soffsets : Offsets for the size vector of a Vars Tensor dimensions
   // Voffsets : Offsets for the Vars starting points
-  std::vector<unsigned> TRanks, sizes, Soffsets, Voffsets;
+  std::vector<UINT> TRanks, sizes, Soffsets, Voffsets;
 };
+
+
 
 /*****************************************\
 !
