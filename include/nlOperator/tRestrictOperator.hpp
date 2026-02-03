@@ -12,7 +12,7 @@
 !  for the total mesh level local 
 !  restrictions on sub topologies on 
 !  multi-meshes are handled internally by
-!  the FE-spaces) 
+!  the Var-FE-spaces) 
 !
 \*****************************************/
 template<typename UINT>
@@ -74,16 +74,9 @@ tRestrictOperator<UINT>::tRestrictOperator(const mfem::Array<mfem::ParFiniteElem
   for(UINT I=0; I<ParFEs_->Size(); I++ ) row_offsets[I] = ParFEs_[I]->GetVSize();
   for(UINT I=0; I<ParFEs_->Size(); I++ ) column_offsets[I] = ParFEs_[I]->GlobalTrueVSize();
   blockRestriction = new mfem::BlockOperator(row_offsets, column_offsets);
-
   for(UINT I=0; I<ParFEs_->Size(); I++){
-    //For diagonal problems
-//    blockRestriction->SetBlock(I,I, ParFEs_.Ptr());
-    //For off-diagonal problems
-    for(UINT J=0; J<ParFEs_->Size(); J++){
-      if(I != J){
-//        if( ) blockRestriction->SetBlock(I,J, ParFEs_.Ptr());
-      }
-    }
+    ElementRestriction
+    blockRestriction->SetBlock(I,I, ParFEs_.Ptr());
   }
 };
 

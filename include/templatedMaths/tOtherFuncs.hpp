@@ -7,7 +7,7 @@
 // a function, doesn't work for
 // complex numbers
 template<typename Number>
-FORCE_INLINE Number abs(Number z){
+FORCE_INLINE Number abs(const Number z){
   return  sqrt<Number>(z*z);
 };
 
@@ -16,7 +16,7 @@ FORCE_INLINE Number abs(Number z){
 // a function, doesn't work for
 // complex numbers
 template<typename Number>
-FORCE_INLINE Number fabs(Number z){
+FORCE_INLINE Number fabs(const Number z){
   return  sqrt<Number>(z*z);
 };
 
@@ -24,7 +24,7 @@ FORCE_INLINE Number fabs(Number z){
 // Returns the multiply add function
 // for single number types
 template<typename Number>
-FORCE_INLINE Number fma(Number x, Number y, Number z){
+FORCE_INLINE Number fma(const Number x, const Number y, const Number z){
   return x*y + z;
 };
 

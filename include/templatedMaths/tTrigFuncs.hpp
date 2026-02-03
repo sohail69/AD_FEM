@@ -48,7 +48,7 @@ FORCE_INLINE Number sin(const Number theta){
 // Returns the Cosine function
 // of a number
 template<typename Number>
-FORCE_INLINE Number cos(Number theta){
+FORCE_INLINE Number cos(const Number theta){
   Number s = sin<Number>(theta);
   return sqrt<Number>(1.0 - s*s);
 };
@@ -56,7 +56,7 @@ FORCE_INLINE Number cos(Number theta){
 // Returns the tangent
 // of a number
 template<typename Number>
-FORCE_INLINE Number tan(Number theta){
+FORCE_INLINE Number tan(const Number theta){
   Number s = sin<Number>(theta);
   Number c = sqrt<Number>(1.0 - s*s);
   return s/c;
@@ -65,7 +65,7 @@ FORCE_INLINE Number tan(Number theta){
 // The arc-cosine
 // function
 template<typename Number>
-FORCE_INLINE Number acos(Number x){
+FORCE_INLINE Number acos(const Number x){
   Number one(1.00), half(0.5), Q(0.00), D(0.00);
   Number acosT(0.00), cs(0.00), sn(0.00);
 
@@ -86,7 +86,7 @@ FORCE_INLINE Number acos(Number x){
 // The arc-sine
 // function
 template<typename Number>
-FORCE_INLINE Number asin(Number x){
+FORCE_INLINE Number asin(const Number x){
   Number one(1.00), half(0.5), Q(0.00), D(0.00);
   Number asinT(0.00), cs(0.00), sn(0.00);
 
@@ -107,7 +107,7 @@ FORCE_INLINE Number asin(Number x){
 // The arc-tangent
 // function
 template<typename Number>
-FORCE_INLINE Number atan(Number x){
+FORCE_INLINE Number atan(const Number x){
   Number one(1.00), half(0.5), Q(0.00), D(0.00);
   Number atanT(0.00), cs(0.00), sn(0.00);
   return atanT;
@@ -116,6 +116,6 @@ FORCE_INLINE Number atan(Number x){
 // Not really implemented yet
 //
 template<typename Number>
-FORCE_INLINE Number atan2(Number theta){
+FORCE_INLINE Number atan2(const Number theta){
   return Number(0.0);
 };

@@ -4,5 +4,5 @@
 #include "tPowFuncs.hpp"        //Done
 #include "tHypFuncs.hpp"        //Done
 #include "tErfGammaFuncs.hpp"   //
-#include "tTrigFuncs.hpp"       //Done
+#include "tTrigFuncs.hpp"       //Done (Need ATan2)
 #include "tOtherFuncs.hpp"      //Done
