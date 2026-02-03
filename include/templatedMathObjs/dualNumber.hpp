@@ -15,7 +15,6 @@ struct PACKSTRUCT dualNumber{
   FORCE_INLINE dualNumber(value_t r=0.0, gradient_t eps=0.0): val(r), grad(eps){};
 };
 
-
 /***************************************\
 !
 !  Dual-Dual number
@@ -30,6 +29,18 @@ FORCE_INLINE constexpr void operator+=(dualNumber<v_t,g_t> & a, const dualNumber
   a.grad = a.grad + b.grad;
 };
 
+template<typename v_t, typename g_t>
+FORCE_INLINE constexpr void operator+=(dualNumber<v_t,g_t> & a, const double & b) 
+{
+  a.val = a.val + b;
+};
+
+template<typename v_t, typename g_t>
+FORCE_INLINE constexpr void operator+=(dualNumber<v_t,g_t> & a, const float & b) 
+{
+  a.val = a.val + b;
+};
+
 //Decrement operator
 template<typename v_t, typename g_t>
 FORCE_INLINE constexpr void operator-=(dualNumber<v_t,g_t> & a, const dualNumber<v_t,g_t> & b) 
@@ -38,21 +49,60 @@ FORCE_INLINE constexpr void operator-=(dualNumber<v_t,g_t> & a, const dualNumber
   a.grad = a.grad - b.grad;
 };
 
+template<typename v_t, typename g_t>
+FORCE_INLINE constexpr void operator-=(dualNumber<v_t,g_t> & a, const double & b) 
+{
+  a.val = a.val - b;
+};
+
+template<typename v_t, typename g_t>
+FORCE_INLINE constexpr void operator-=(dualNumber<v_t,g_t> & a, const float & b) 
+{
+  a.val = a.val - b;
+};
+
 //Multiplication equals operator
 template<typename v_t, typename g_t>
 FORCE_INLINE constexpr void operator*=(dualNumber<v_t,g_t> & a, const dualNumber<v_t,g_t> & b) 
 {
-  a.val = a.val*b.val;
-  a.grad = a.grad - b.grad;
+  a.grad = a.val*b.grad + a.grad*b.val;
+  a.val  = a.val*b.val;
 };
 
-//Divide equals
+template<typename v_t, typename g_t>
+FORCE_INLINE constexpr void operator*=(dualNumber<v_t,g_t> & a, const double & b) 
+{
+  a.val = b*a.val;
+  a.grad = b*a.grad;
+};
+
+template<typename v_t, typename g_t>
+FORCE_INLINE constexpr void operator*=(dualNumber<v_t,g_t> & a, const float & b) 
+{
+  a.val = b*a.val;
+  a.grad = b*a.grad;
+};
+
+//Divide equals operator
 template<typename v_t, typename g_t>
 FORCE_INLINE constexpr void operator/=(dualNumber<v_t,g_t> & a, const dualNumber<v_t,g_t> & b) 
 {
-  dualNumber<v_t,g_t> newVal;
-  newVal.val  = a.val*b.val;
-  newVal.grad = a.val*b.grad + a.grad*b.val;
+  a.grad = (a.grad*b.val + a.val*b.grad)/(b.val*b.val);
+  a.val  = (a.val/b.val);
+};
+
+template<typename v_t, typename g_t>
+FORCE_INLINE constexpr void operator/=(dualNumber<v_t,g_t> & a, const double & b) 
+{
+  a.grad = a.grad/b;
+  a.val  = a.val/b;
+};
+
+template<typename v_t, typename g_t>
+FORCE_INLINE constexpr void operator/=(dualNumber<v_t,g_t> & a, const float & b) 
+{
+  a.grad = (a.grad*b.val + a.val*b.grad)/(b.val*b.val);
+  a.val  = (a.val/b.val);
 };
 
 /***************************************\
