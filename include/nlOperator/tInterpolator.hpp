@@ -15,7 +15,7 @@
 class tInterpolator : public mfem::DenseMatrix
 {
   private:
-    const mfem::Array<mfem::ParGridFunctions*> & ParGFS;
+    const mfem::Array<mfem::ParGridFunction*> & ParGFS;
     mfem::DenseMatrix IOp;
 
   public:
@@ -23,5 +23,5 @@ class tInterpolator : public mfem::DenseMatrix
     tInterpolator();
 
     //Get the interpolation matrix
-    mfem::DenseMatrix & GetMat(){return IOp};
+    mfem::DenseMatrix & GetMat(){return IOp;};
 };

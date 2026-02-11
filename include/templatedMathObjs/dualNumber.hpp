@@ -101,8 +101,8 @@ FORCE_INLINE constexpr void operator/=(dualNumber<v_t,g_t> & a, const double & b
 template<typename v_t, typename g_t>
 FORCE_INLINE constexpr void operator/=(dualNumber<v_t,g_t> & a, const float & b) 
 {
-  a.grad = (a.grad*b.val + a.val*b.grad)/(b.val*b.val);
-  a.val  = (a.val/b.val);
+  a.grad = a.grad/b;
+  a.val  = a.val/b;
 };
 
 /***************************************\

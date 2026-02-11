@@ -35,5 +35,5 @@ class TCoefficientIntegrator
    unsigned &GetIntegRule(){return IntegRuleID;};
 
    /// Evaluate the integral of the element
-   Number Eval(Array<int> InputBlocks, tVarVectorMFEM<Number> elm_vars){return 0;};
+   Number Eval(Array<int> InputBlocks, tVarVectorMFEM<Number,unsigned> elm_vars){return 0;};
 };

@@ -5,18 +5,16 @@
 #include "../templatedMathObjs/dualNumber.hpp"
 #include "../templatedMathObjs/tVector.hpp"
 #include "../UtilityObjects/utilityFuncs.hpp"
-#include "TCoeffInteg.hpp"
 #include <vector>
 
 
 //Linear algebra
 //operators
+#include "../templatedMathObjs/tMultiVarVector.hpp"
 #include "tInterpolator.hpp"
 #include "tRestrictOperator.hpp"
 
-using namespace mfem;
 template<typename Num> using dualSymNum = dualNumber<Num,Num>;
-template<typename Num> using ddualSymNum = dualNumber<dualNumber<Num,Num>,dualNumber<Num,Num>>;
 
 /*****************************************\
 !
@@ -41,63 +39,77 @@ template<typename Num> using ddualSymNum = dualNumber<dualNumber<Num,Num>,dualNu
 ! directly derive the the residual and
 ! Jacobian forms
 !
+! Basic note:
+! TrueVars are Vars the have a discrete
+! data analog, I.e. they have a contribution
+! in the global vector and associated DOF's.
+! Vars(ProblemVars) are a set of
+! variables that can be derived by 
+! interpolating the duscrete data-set of
+! TrueVars
+!
+! example problem:
+! (u + k.grad(u)) . v = f
+! solved for u
+! in this example u is a TrueVar, grad(u)
+! is a Var/ProblemVar that can be derived
+! by choice of interpolation of the discrete
+! values of u
+!
 \*****************************************/
 template<typename Number>
 class tADNLForm : public Operator
 {
 private:
   //Reference to essential boundary conditions
-  const std::vector<ParGridFunction*> & Vars;
-  std::vector<Array<int>*>      ess_bcs_markers;
-  Array<int>                    ess_bcs_tdofs;
+  const std::vector<ParGridFunction*> & TrueVars;
+  std::vector<mfem::Array<int>*>      ess_bcs_markers;
+  mfem::Array<int>                    ess_bcs_tdofs;
 
-  //Energy Functional forms coefficient
-  std::vector<TCoefficientIntegrator<Number>*>                                   EFuncCoeff;//Coeffs
-  std::vector<std::function<dualSymNum<Number>(const tVector<dualSymNum<Number>> )>> dEfuncs;//dual-funcs
-  std::vector<std::function<ddualSymNum<Number>(const tVector<ddualSymNum<Number>> )>> ddEfuncs;//ddual-funcs
+  //Functions for evaluating the coefficients
+  //at the at the integration points for residual
+  //and the Jacobian
+//TODO:Make a var map for Var blocks used in Jacbian forms
+  std::vector<std::function<void(const Vector & x, const MFEMVarIterData<int> & Iter)>> Rfuncs; 
+  std::vector<std::function<void(const Vector & x, const MFEMVarIterData<int> & Iter)>> Jfuncs; 
 
   //Reference to block vector of element data
-  Array<int> *btoffs_inp, *bvoffs_inp;
-  Array<int> *btoffs_out, *bvoffs_out;
   mutable mfem::Vector  *EBlockVector, *EBlockResidual;
   mutable mfem::DenseMatrix elMats;
 
   //Used for directional derivatives Templated
   //dual number vector for Residual and Jacobian
-  mutable tVector<dualSymNum<Number>>  *tERVec;
-  mutable tVector<ddualSymNum<Number>> *tEJVec;
   mutable Operator *Jacobian_f=NULL;
 
-  //Used for Isogeometric interpolator functions
-  //at all integration points for a given integration
-  //rule
-//  Array<IntegrationRule> IntRules;
-
-  //Problem sizing and restriction operator
-  int NIntegsR=0, NIntegsJ=0;
-  int nElms=0, NDofsMax=0, nElmDofs=0, NEQs=0;
-  mfem::Operator *elem_restrict=NULL;
-  tInterpolator IOp;
-
+  //Restriction and Interpolation operators
+  mutable mfem::Operator *elem_restrict=NULL;
+  mutable tInterpolator *IOp=NULL;
 
   //Device and memory configs
   const bool             & use_dev;
   const mfem::Device     & device;
   const mfem::MemoryType & mt;
 
+  //Problem sizing
+  int nVars=0, sum_nIps_nVars=0;
+  int nElms=0, nDofsMax=0, nElmDofs=0, nEQs=0;
+  int OperatorSize(const std::vector<ParGridFunction*> & TrueVars_);
+
+  //Iterators for MultiVarTensor data
+  VarIterData<int>     IO_VarIterator;
+  MFEMVarIterData<int> MFEM_VarIterator;
+
 public:
   //Constructor
-  tADNLForm(const std::vector<ParGridFunction*> & Vars_, const mfem::Device & dev
+  tADNLForm(const std::vector<ParGridFunction*> & TrueVars_, const mfem::Device & dev
           , const mfem::MemoryType & mt_, const bool & use_dev_);
 
   //Destructor
   ~tADNLForm();
 
-  /// Adds an energy functional coeff to the
-  /// list of them, these are differentiated
-  /// to give the Residual form
-  void AddEnergyFuncCoeff(TCoefficientIntegrator<Number> *EFuncCoeff, std::vector<int> InpBlocks);
-  void PrepareIntegrators();
+  //Add a tensor variable to the list of sampled
+  //variables which are sampled over every element
+  void AddTVar(Var<int> newVar);
 
   /// Assembles the residual form i.e.
   /// sums over all domain/bdr coefficients.
@@ -110,6 +122,10 @@ public:
   mfem::Operator & GetGradient(const mfem::Vector &x) const override;
 };
 
+template<typename uint>
+void InvIterator(const uint & Ik, uint & IElm, uint & IDof, uint & Ip){
+
+};
 
 /*****************************************\
 !
@@ -117,41 +133,47 @@ public:
 !
 \*****************************************/
 template<typename Number>
-tADNLForm<Number>::tADNLForm(const std::vector<ParGridFunction*> & Vars_, const mfem::Device & dev
+int tADNLForm<Number>::OperatorSize(const std::vector<ParGridFunction*> & TrueVars_)
+{
+  int Size=0;
+  for(int I=0; I<TrueVars_.size(); I++) Size += TrueVars_[I]->ParFESpace()->TrueVSize();
+  return Size;
+};
+
+
+template<typename Number>
+tADNLForm<Number>::tADNLForm(const std::vector<ParGridFunction*> & TrueVars_, const mfem::Device & dev
                            , const mfem::MemoryType & mt_, const bool & use_dev_):
-                             Vars(Vars_), device(dev), mt(mt_), use_dev(use_dev_)
+                             mfem::Operator(OperatorSize(TrueVars_),OperatorSize(TrueVars_))
+                           , TrueVars(TrueVars_), device(dev), mt(mt_), use_dev(use_dev_)
 {
   //////////////////////////
   ///Recover the object sizes
   //////////////////////////
-  nElms = Vars[0]->ParFESpace()->GetMesh()->GetNE();
-  for(int I=0; I<Vars.size(); I++){
-    NEQs += Vars[I]->ParFESpace()->GetTrueVSize();
+  nElms = TrueVars[0]->ParFESpace()->GetMesh()->GetNE();
+  nEQs  = OperatorSize(TrueVars_);
+  for(int I=0; I<TrueVars.size(); I++){
     int NDofVar=0;
     for(int J=0; J<nElms; J++){
       DofTransformation doftrans;
-      Array<int> dofs;
-      Vars[I]->ParFESpace()->GetElementDofs(J,dofs,doftrans);
+      mfem::Array<int> dofs;
+      TrueVars[I]->ParFESpace()->GetElementDofs(J,dofs,doftrans);
       NDofVar = max(dofs.Size(),NDofVar);
       nElmDofs += dofs.Size();
     }
-    NDofsMax += NDofVar;
+    nDofsMax += NDofVar;
   }
 
   //////////////////////////
   ///Allocate the memory objects
   //////////////////////////
-  elMats.SetSize(NDofsMax);
+  elMats.SetSize(nDofsMax);
   EBlockVector   = new mfem::Vector(nElmDofs,mt_);
   EBlockResidual = new mfem::Vector(nElmDofs,mt_);
-  tERVec = new tVector<dualSymNum<Number>>(NDofsMax,mt);
-  tEJVec = new tVector<ddualSymNum<Number>>(NDofsMax,mt);
 
   //////////////////////////
   ///Check sizes
   //////////////////////////
-  std::cout <<  tERVec->size           << std::endl;
-  std::cout <<  tEJVec->size           << std::endl;
   std::cout <<  EBlockVector->Size()   << std::endl;
   std::cout <<  EBlockResidual->Size() << std::endl;
 };
@@ -165,29 +187,7 @@ tADNLForm<Number>::tADNLForm(const std::vector<ParGridFunction*> & Vars_, const 
 template<typename Number>
 tADNLForm<Number>::~tADNLForm()
 {
-  delete tERVec, tEJVec, EBlockVector, EBlockResidual;
-};
-
-
-/*****************************************\
-!
-! Add energy functional coeffs
-!
-\*****************************************/
-//Add a coefficient to the list
-template<typename Number>
-void tADNLForm<Number>::AddEnergyFuncCoeff(TCoefficientIntegrator<Number> *EFuncCoeff
-                                         , std::vector<int> InpBlocks)
-{
-
-
-};
-
-//Finalize the Integrator functions before assembly
-template<typename Number>
-void tADNLForm<Number>::PrepareIntegrators(){
-
-
+  delete EBlockVector, EBlockResidual;
 };
 
 
@@ -219,37 +219,31 @@ void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
   if(elem_restrict != NULL) elem_restrict->Mult(x,*EBlockVector);
 
   //Some stuff for devices
-  const auto ElmVecs = Reshape(EBlockVector->Read(), NDofsMax, nElms);
-  auto ElmRes = Reshape(EBlockResidual->ReadWrite(), NDofsMax, nElms);
-
-  unsigned sum_NIpsNDofs=0;
-  for(int IIntegs=0; IIntegs<; ) sum_NIpsNDofs
-  tVector<dualSymNum<Number>> g_Xp, fg_Xp;
+  const auto ElmVecs = Reshape(EBlockVector->Read(), nDofsMax, nElms);
+  auto ElmRes = Reshape(EBlockResidual->ReadWrite(), nDofsMax, nElms);
 
   //Partially assemble the sampled
   //variables used for calculating
   //the residuals
-  mfem::forall_switch(use_dev, nElms*sum_NIpsNVars, [=] MFEM_HOST_DEVICE (int Ik)
+  mfem::forall_switch(use_dev, nElms*sum_nIps_nVars, [=] MFEM_HOST_DEVICE (int Ik)
   {
     //The recover the sub iterators
     unsigned IElm, IDof, Ip;
-    InvIterator(Ik, IElm, IDof, Ip);
+    InvIterator<unsigned>(Ik, IElm, IDof, Ip);
 
     //Interpolate the DOF's to get
-    //the vars at the sample points
-    dualSymNum<Number> zero(0.00), dx(0.00,1.00);
-    for(unsigned JDof=0; JDof<NDofMax; JDof++){
-      g_Xp(Ik) = IOp.GetMat()(Ik,JDof)*(ElmVecs(IElm,JDof) + ((JDof==0)?zero:g_Xp(Ik));
+    //the TrueVars at the sample points
+    for(unsigned JDof=0; JDof<nDofsMax; JDof++){
+ //     g_Xp(Ik) = IOp.GetMat()(Ik,JDof)*(ElmVecs(IElm,JDof) + ((JDof==0)?zero:g_Xp(Ik));
     }
 
-//Useful for compact AD functions
-//+ ((JDof==IDof)?zero:dx)
+    //for(unsigned ICoeff=0; ICoeff<Rfuncs; ICoeff++){
+  //    Rfuncs()
 
-    //Calculate the resdual function
-    fg_Xp(Ik) = func(g_Xp, Ik);
+//  std::vector<std::function<FORCE_INLINE void(const Vector & x, const MFEMVarIterData<int> & Iter)>> Rfuncs; 
+
+
   });
-
-
 
   //Get the residual vector and apply the essential BC's
   if(elem_restrict        != NULL) elem_restrict->MultTranspose(*EBlockResidual,y);
@@ -261,6 +255,5 @@ void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
 !     Assemble the Jacobian matrix
 !
 \*****************************************/
-void buildJacobian(const Vector & x){};
-
-};
+template<typename Number>
+void tADNLForm<Number>::buildJacobian(const Vector & x) const {};

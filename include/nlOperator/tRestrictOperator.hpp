@@ -52,7 +52,7 @@ template<typename UINT>
 UINT tRestrictOperator<UINT>::OperatorSizeM(const mfem::Array<mfem::ParFiniteElementSpace*> & ParFEs_)
 {
   UINT EDofs=0;
-  for(UINT I=0; I<ParFEs_->Size(); I++ ) EDofs += ParFEs_[I]->GetVSize();
+  for(UINT I=0; I<ParFEs_.Size(); I++ ) EDofs += ParFEs_[I]->GetVSize();
   return EDofs;
 };
 
@@ -60,7 +60,7 @@ template<typename UINT>
 UINT tRestrictOperator<UINT>::OperatorSizeN(const mfem::Array<mfem::ParFiniteElementSpace*> & ParFEs_)
 {
   UINT TDofs=0; 
-  for(UINT I=0; I<ParFEs_->Size(); I++ ) TDofs += ParFEs_[I]->GlobalTrueVSize();
+  for(UINT I=0; I<ParFEs_.Size(); I++ ) TDofs += ParFEs_[I]->GlobalTrueVSize();
   return TDofs;
 };
 
@@ -71,12 +71,12 @@ tRestrictOperator<UINT>::tRestrictOperator(const mfem::Array<mfem::ParFiniteElem
                                          , row_offsets(ParFEs_.Size()), column_offsets(ParFEs_.Size())
                                          , ParFEs(ParFEs_)
 {
-  for(UINT I=0; I<ParFEs_->Size(); I++ ) row_offsets[I] = ParFEs_[I]->GetVSize();
-  for(UINT I=0; I<ParFEs_->Size(); I++ ) column_offsets[I] = ParFEs_[I]->GlobalTrueVSize();
+  for(UINT I=0; I<ParFEs_.Size(); I++ ) row_offsets[I] = ParFEs_[I]->GetVSize();
+  for(UINT I=0; I<ParFEs_.Size(); I++ ) column_offsets[I] = ParFEs_[I]->GlobalTrueVSize();
   blockRestriction = new mfem::BlockOperator(row_offsets, column_offsets);
-  for(UINT I=0; I<ParFEs_->Size(); I++){
-    ElementRestriction
-    blockRestriction->SetBlock(I,I, ParFEs_.Ptr());
+  for(UINT I=0; I<ParFEs_.Size(); I++){
+//    ElementRestriction
+  //  blockRestriction->SetBlock(I,I, ParFEs_.Ptr());
   }
 };
 
