@@ -78,8 +78,8 @@ private:
   std::vector<std::function<void(const Vector & x, const MFEMVarIterData<int> & Iter)>> Jfuncs; 
 
   //Reference to block vector of element data
-  mutable mfem::Vector  *xE_Samp=NULL;
-  mutable mfem::Vector  *EBlockVector=NULL, *EBlockResidual=NULL;
+  mutable mfem::Vector  *xE_Samp=NULL, *coeffE_Samp=NULL;        //The sampled vars and Coeffs
+  mutable mfem::Vector  *EBlockVector=NULL, *EBlockResidual=NULL;//The element vectors
   mutable mfem::DenseMatrix elMats;
 
   //Used for directional derivatives Templated
@@ -102,8 +102,8 @@ private:
 
   //Iterators for MultiVarTensor data
   mutable bool VarIterUpdateFlag=false;
-  VarIterData<int>     IO_VarIterator;
-  MFEMVarIterData<int> MFEM_VarIterator;
+  mutable VarIterData<int>     IO_VarIterator;
+  mutable MFEMVarIterData<int> MFEM_VarIterator;
 
 public:
   //Constructor
@@ -239,8 +239,20 @@ void tADNLForm<Number>::AddTVar(const Var<int> & newVar, const mfem::Operator & 
 template<typename Number>
 void tADNLForm<Number>::PrepareOperator() const
 {
+  //Update the MFEM Var iterator
+  MakeMultiVarMFEMIter<int>(mt, IO_VarIterator, MFEM_VarIterator);
+
+  //Rebuild the Interpolator (TODO)
 
 
+  //Update the vector size for the sampled variables  
+  int VarSize = IO_VarIterator.Tsize;
+  if(xE_Samp != NULL){ delete xE_Samp;  xE_Samp=NULL;};
+  if((xE_Samp == NULL)and(VarSize !=0)) xE_Samp= new mfem::Vector(VarSize*nElms,mt);
+
+
+  //Set the flag to false
+  VarIterUpdateFlag=false;
 }
 
 /*****************************************\
@@ -278,7 +290,6 @@ void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
   //Some stuff for devices
   const auto ElmVecs = Reshape(EBlockVector->Read(), nDofsMax, nElms);
   auto ElmRes = Reshape(EBlockResidual->ReadWrite(), nDofsMax, nElms);
-  mfem::Vector xtmp(nDofsMax,mt);
 
   //Partially assemble the sampled
   //variables used for calculating
