@@ -70,7 +70,11 @@ private:
   //at the at the integration points for residual
   //and the Jacobian
 //TODO:Make a var map for Var blocks used in Jacbian forms
-  std::vector<std::function<void(const Vector & x, const MFEMVarIterData<int> & Iter)>> Rfuncs; 
+  std::vector<std::function<void(const mfem::Vector         & x
+                               , const MFEMVarIterData<int> & Iter
+                               , const mfem::Array<int>     & activeBlocks)>> Rfuncs; 
+
+
   std::vector<std::function<void(const Vector & x, const MFEMVarIterData<int> & Iter)>> Jfuncs; 
 
   //Reference to block vector of element data
@@ -79,7 +83,7 @@ private:
 
   //Used for directional derivatives Templated
   //dual number vector for Residual and Jacobian
-  mutable Operator *Jacobian_f=NULL;
+  mutable mfem::Operator *Jacobian_f=NULL;
 
   //Restriction and Interpolation operators
   mutable mfem::Operator *elem_restrict=NULL;
@@ -96,6 +100,7 @@ private:
   int OperatorSize(const std::vector<ParGridFunction*> & TrueVars_);
 
   //Iterators for MultiVarTensor data
+  bool VarIterUpdateFlag=false;
   VarIterData<int>     IO_VarIterator;
   MFEMVarIterData<int> MFEM_VarIterator;
 
@@ -109,7 +114,8 @@ public:
 
   //Add a tensor variable to the list of sampled
   //variables which are sampled over every element
-  void AddTVar(Var<int> newVar);
+  //this variable has a parent True Var and an interpolator
+  void AddTVar(const Var<int> & newVar, const mfem::Operator & InterpOp);
 
   /// Assembles the residual form i.e.
   /// sums over all domain/bdr coefficients.
@@ -176,6 +182,12 @@ tADNLForm<Number>::tADNLForm(const std::vector<ParGridFunction*> & TrueVars_, co
   //////////////////////////
   std::cout <<  EBlockVector->Size()   << std::endl;
   std::cout <<  EBlockResidual->Size() << std::endl;
+
+  //////////////////////////
+  ///Clear the Multi-Variate
+  ///tensor sampled Vars
+  //////////////////////////
+  clearIterator(IO_VarIterator);
 };
 
 
@@ -187,7 +199,23 @@ tADNLForm<Number>::tADNLForm(const std::vector<ParGridFunction*> & TrueVars_, co
 template<typename Number>
 tADNLForm<Number>::~tADNLForm()
 {
+  clearIterator(IO_VarIterator);
   delete EBlockVector, EBlockResidual;
+};
+
+/*****************************************\
+!
+!  Adding in a variable to be sampled by
+!  the assembly (FULL|ELEMENT|PARTIAL) loop
+!  in the iterator class
+!
+\*****************************************/
+template<typename Number>
+void tADNLForm<Number>::AddTVar(const Var<int> & newVar, const mfem::Operator & InterpOp)
+{
+  //IOp->AddInterpolator(newVar.ParentTrueVar, InterpOp)
+  AddVarIteratorDat(IO_VarIterator, newVar.TRank, newVar.sizes);
+  VarIterUpdateFlag=true;
 };
 
 
@@ -214,6 +242,10 @@ mfem::Operator & tADNLForm<Number>::GetGradient(const mfem::Vector &x) const
 template<typename Number>
 void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
 {
+  if(VarIterUpdateFlag){
+    //Rebuild the MultiVarIterator
+  }
+
   //Get the element data vectors
   //with a restrict operator
   if(elem_restrict != NULL) elem_restrict->Mult(x,*EBlockVector);
@@ -221,6 +253,7 @@ void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
   //Some stuff for devices
   const auto ElmVecs = Reshape(EBlockVector->Read(), nDofsMax, nElms);
   auto ElmRes = Reshape(EBlockResidual->ReadWrite(), nDofsMax, nElms);
+  mfem::Vector xtmp(nDofsMax,mt);
 
   //Partially assemble the sampled
   //variables used for calculating
@@ -231,16 +264,17 @@ void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
     unsigned IElm, IDof, Ip;
     InvIterator<unsigned>(Ik, IElm, IDof, Ip);
 
+
     //Interpolate the DOF's to get
     //the TrueVars at the sample points
     for(unsigned JDof=0; JDof<nDofsMax; JDof++){
  //     g_Xp(Ik) = IOp.GetMat()(Ik,JDof)*(ElmVecs(IElm,JDof) + ((JDof==0)?zero:g_Xp(Ik));
     }
 
-    //for(unsigned ICoeff=0; ICoeff<Rfuncs; ICoeff++){
-  //    Rfuncs()
-
-//  std::vector<std::function<FORCE_INLINE void(const Vector & x, const MFEMVarIterData<int> & Iter)>> Rfuncs; 
+  //for(unsigned ICoeff=0; ICoeff<Rfuncs.size(); ICoeff++){
+  //    Rfuncs(xtmp, MFEM_VarIterator)
+//  std::vector<std::function<void(const Vector & x, const MFEMVarIterData<int> & Iter)>> Rfuncs; 
+// Rfuncs; 
 
 
   });

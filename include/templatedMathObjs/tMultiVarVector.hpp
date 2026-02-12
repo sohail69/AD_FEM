@@ -82,14 +82,27 @@ void clearIterator(VarIterData<uint> & data)
 //Add data to the multi-variate iterator
 //for multi-tensor objects
 template<typename uint>
-void AddVarIteratorDat(VarIterData<uint> & data, const std::vector<uint> TRank, const std::vector<uint> sizes)
+void AddVarIteratorDat(VarIterData<uint> & data
+                     , const uint & TRank
+                     , const std::vector<uint> & sizes)
 {
-  for(uint I=0; I<data.TRank.size(); I++) data.TRanks.push_back(TRank[I]);
-  for(uint I=0; I<data.TRank.size(); I++){
-    for(uint J=0; J<data.TRank[I]; J++){
-      data.sizes.push_back(sizes[I]);
-    }
+  //Add the tensor rank
+  //and initialise the
+  //offsets if empty
+  data.TRanks.push_back(TRank);
+  if( data.Soffsets.size() == 0) data.Soffsets.push_back(0);
+  if( data.Voffsets.size() == 0) data.Voffsets.push_back(0);
+  int Isof=data.Soffsets.size()-1;
+  int Ivof=data.Voffsets.size()-1;
+  int tmp_size=0;
+
+  for(uint I=0; I<TRank; I++){
+    data.sizes.push_back(sizes[I]);
+    tmp_size += sizes[I];
   }
+  data.Tsize += tmp_size;
+  data.Soffsets.push_back(data.Soffsets[Isof]+tmp_size);
+  data.Voffsets.push_back(data.Voffsets[Ivof]+TRank);
 };
 
 /**
