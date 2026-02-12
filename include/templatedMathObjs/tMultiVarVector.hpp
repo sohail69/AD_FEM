@@ -87,7 +87,7 @@ void AddVarIteratorDat(VarIterData<uint> & data
                      , const std::vector<uint> & sizes)
 {
   //Add the tensor rank
-  //and initialise the
+  //and initialise the 
   //offsets if empty
   data.TRanks.push_back(TRank);
   if( data.Soffsets.size() == 0) data.Soffsets.push_back(0);
@@ -122,16 +122,29 @@ struct MFEMVarIterData{
   // Voffsets : Offsets for the Vars starting points [nVars]
   // sDim     : Spatial dimension of the problem
   uint Tsize, sDim;
-  mfem::Memory<uint> TRanks, sizes, Soffsets, Voffsets;
+  mfem::Array<uint> TRanks, sizes, Soffsets, Voffsets;
 };
 
 // Takes the base IO-iterator and passes
 // it to a mfem-suitable data structure
 template<typename uint>
-void MakeMultiVarMFEMIter(const VarIterData<uint> & IterBase, MFEMVarIterData<uint> & IterMFEM)
+void MakeMultiVarMFEMIter(const mfem::MemoryType  & mt
+                        , const VarIterData<uint> & IterBase
+                        , MFEMVarIterData<uint>   & IterMFEM)
 {
+  //Make the vectors the correct sizes
   IterMFEM.Tsize = IterBase.Tsize;
   IterMFEM.sDim  = IterBase.sDim;
+  IterMFEM.TRanks.SetSize(IterBase.TRanks.size(),mt);
+  IterMFEM.sizes.SetSize(IterBase.sizes.size(),mt);
+  IterMFEM.Soffsets.SetSize(IterBase.Soffsets.size(),mt);
+  IterMFEM.Voffsets.SetSize(IterBase.Voffsets.size(),mt);
+
+  //Copy over the data
+  for(uint I=0; I<IterBase.TRanks.size(); I++) IterMFEM.TRanks[I] = IterBase.TRanks[I];
+  for(uint I=0; I<IterBase.sizes.size(); I++) IterMFEM.sizes[I] = IterBase.sizes[I];
+  for(uint I=0; I<IterBase.Soffsets.size(); I++) IterMFEM.Soffsets[I] = IterBase.Soffsets[I];
+  for(uint I=0; I<IterBase.Voffsets.size(); I++) IterMFEM.Voffsets[I] = IterBase.Voffsets[I];
 };
 
 

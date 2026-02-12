@@ -78,7 +78,8 @@ private:
   std::vector<std::function<void(const Vector & x, const MFEMVarIterData<int> & Iter)>> Jfuncs; 
 
   //Reference to block vector of element data
-  mutable mfem::Vector  *EBlockVector, *EBlockResidual;
+  mutable mfem::Vector  *xE_Samp=NULL;
+  mutable mfem::Vector  *EBlockVector=NULL, *EBlockResidual=NULL;
   mutable mfem::DenseMatrix elMats;
 
   //Used for directional derivatives Templated
@@ -100,7 +101,7 @@ private:
   int OperatorSize(const std::vector<ParGridFunction*> & TrueVars_);
 
   //Iterators for MultiVarTensor data
-  bool VarIterUpdateFlag=false;
+  mutable bool VarIterUpdateFlag=false;
   VarIterData<int>     IO_VarIterator;
   MFEMVarIterData<int> MFEM_VarIterator;
 
@@ -117,6 +118,13 @@ public:
   //this variable has a parent True Var and an interpolator
   void AddTVar(const Var<int> & newVar, const mfem::Operator & InterpOp);
 
+  //Prepare the operator before solving the
+  //problem, does miscallaneous things such as:
+  // ->Updates the MultiVarIterator
+  // ->Updates the interpolator for the sampled Vars
+  // ->Sizes the vectors needed for sampling the Vars
+  void PrepareOperator() const;
+
   /// Assembles the residual form i.e.
   /// sums over all domain/bdr coefficients.
   virtual void Mult(const Vector & x, Vector & y) const;
@@ -128,6 +136,8 @@ public:
   mfem::Operator & GetGradient(const mfem::Vector &x) const override;
 };
 
+//An inverse iterator
+//to 
 template<typename uint>
 void InvIterator(const uint & Ik, uint & IElm, uint & IDof, uint & Ip){
 
@@ -138,6 +148,7 @@ void InvIterator(const uint & Ik, uint & IElm, uint & IDof, uint & Ip){
 ! Construct the non-linear form
 !
 \*****************************************/
+//Size the operator
 template<typename Number>
 int tADNLForm<Number>::OperatorSize(const std::vector<ParGridFunction*> & TrueVars_)
 {
@@ -146,7 +157,7 @@ int tADNLForm<Number>::OperatorSize(const std::vector<ParGridFunction*> & TrueVa
   return Size;
 };
 
-
+//The constructor
 template<typename Number>
 tADNLForm<Number>::tADNLForm(const std::vector<ParGridFunction*> & TrueVars_, const mfem::Device & dev
                            , const mfem::MemoryType & mt_, const bool & use_dev_):
@@ -164,7 +175,7 @@ tADNLForm<Number>::tADNLForm(const std::vector<ParGridFunction*> & TrueVars_, co
       DofTransformation doftrans;
       mfem::Array<int> dofs;
       TrueVars[I]->ParFESpace()->GetElementDofs(J,dofs,doftrans);
-      NDofVar = max(dofs.Size(),NDofVar);
+      NDofVar = std::max(dofs.Size(),NDofVar);
       nElmDofs += dofs.Size();
     }
     nDofsMax += NDofVar;
@@ -186,6 +197,7 @@ tADNLForm<Number>::tADNLForm(const std::vector<ParGridFunction*> & TrueVars_, co
   //////////////////////////
   ///Clear the Multi-Variate
   ///tensor sampled Vars
+  // (for good measure)
   //////////////////////////
   clearIterator(IO_VarIterator);
 };
@@ -218,6 +230,18 @@ void tADNLForm<Number>::AddTVar(const Var<int> & newVar, const mfem::Operator & 
   VarIterUpdateFlag=true;
 };
 
+/*****************************************\
+!
+!  Preparing the operator for Mult
+!  and GetGradient functions
+!
+\*****************************************/
+template<typename Number>
+void tADNLForm<Number>::PrepareOperator() const
+{
+
+
+}
 
 /*****************************************\
 !
@@ -242,9 +266,10 @@ mfem::Operator & tADNLForm<Number>::GetGradient(const mfem::Vector &x) const
 template<typename Number>
 void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
 {
-  if(VarIterUpdateFlag){
-    //Rebuild the MultiVarIterator
-  }
+  //Rebuild the MultiVarIterator,
+  //Interpolator and sampler, if
+  //the user has forgotten
+  if(VarIterUpdateFlag) PrepareOperator();
 
   //Get the element data vectors
   //with a restrict operator
