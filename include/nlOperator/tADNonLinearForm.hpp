@@ -165,7 +165,8 @@ tADNLForm<Number>::tADNLForm(const std::vector<ParGridFunction*> & TrueVars_, co
                            , TrueVars(TrueVars_), device(dev), mt(mt_), use_dev(use_dev_)
 {
   //////////////////////////
-  ///Recover the object sizes
+  ///Recover the problem sizes
+  ///from the gridFunctions
   //////////////////////////
   nElms = TrueVars[0]->ParFESpace()->GetMesh()->GetNE();
   nEQs  = OperatorSize(TrueVars_);
@@ -201,7 +202,6 @@ tADNLForm<Number>::tADNLForm(const std::vector<ParGridFunction*> & TrueVars_, co
   //////////////////////////
   clearIterator(IO_VarIterator);
 };
-
 
 /*****************************************\
 !
@@ -250,6 +250,8 @@ void tADNLForm<Number>::PrepareOperator() const
   if(xE_Samp != NULL){ delete xE_Samp;  xE_Samp=NULL;};
   if((xE_Samp == NULL)and(VarSize !=0)) xE_Samp= new mfem::Vector(VarSize*nElms,mt);
 
+  if(coeffE_Samp != NULL){ delete coeffE_Samp; coeffE_Samp=NULL;};
+  if((xE_Samp == NULL)and(VarSize !=0)) coeffE_Samp = new mfem::Vector(VarSize*nElms,mt);
 
   //Set the flag to false
   VarIterUpdateFlag=false;
@@ -300,19 +302,16 @@ void tADNLForm<Number>::Mult(const Vector & x, Vector & y) const
     unsigned IElm, IDof, Ip;
     InvIterator<unsigned>(Ik, IElm, IDof, Ip);
 
-
     //Interpolate the DOF's to get
     //the TrueVars at the sample points
     for(unsigned JDof=0; JDof<nDofsMax; JDof++){
- //     g_Xp(Ik) = IOp.GetMat()(Ik,JDof)*(ElmVecs(IElm,JDof) + ((JDof==0)?zero:g_Xp(Ik));
+//    g_Xp(Ik) = IOp.GetMat()(Ik,JDof)*(ElmVecs(IElm,JDof) + ((JDof==0)?zero:g_Xp(Ik));
     }
-
+//
   //for(unsigned ICoeff=0; ICoeff<Rfuncs.size(); ICoeff++){
-  //    Rfuncs(xtmp, MFEM_VarIterator)
+  //    Rfuncs(xtmp, MFEM_VarIterator, IElm, Ip);
 //  std::vector<std::function<void(const Vector & x, const MFEMVarIterData<int> & Iter)>> Rfuncs; 
 // Rfuncs; 
-
-
   });
 
   //Get the residual vector and apply the essential BC's
